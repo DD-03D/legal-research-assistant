@@ -13,7 +13,19 @@ except ImportError:
     logger = None
 
 from config.settings import settings
-from src.ingestion.vector_store import VectorStoreManager
+# Try to import vector store, use alternative if needed
+try:
+    from src.ingestion.vector_store import VectorStoreManager
+    VECTOR_STORE_AVAILABLE = True
+except ImportError as e:
+    print(f"Primary vector store not available: {e}")
+    VECTOR_STORE_AVAILABLE = False
+    try:
+        from src.ingestion.alternative_vector_store import create_alternative_vector_store
+    except ImportError as alt_e:
+        print(f"Alternative vector store also not available: {alt_e}")
+        raise ImportError("No vector store implementation available")
+
 from src.utils import ConflictDetector, CitationFormatter
 
 

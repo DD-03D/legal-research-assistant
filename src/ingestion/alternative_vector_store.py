@@ -10,14 +10,25 @@ from pathlib import Path
 import numpy as np
 from loguru import logger
 
+# Vector Store Dependencies
 try:
     from langchain_community.vectorstores import FAISS
-    from langchain.schema import Document
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
     FAISS_AVAILABLE = True
 except ImportError:
-    FAISS_AVAILABLE = False
-    logger.warning("FAISS not available, using in-memory vector store")
+    try:
+        # Try alternative import path
+        from langchain.vectorstores import FAISS
+        FAISS_AVAILABLE = True
+    except ImportError:
+        FAISS_AVAILABLE = False
+        logger.warning("FAISS not available, using in-memory vector store")
+
+try:
+    from langchain.schema import Document
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+except ImportError as e:
+    logger.error(f"Critical langchain imports failed: {e}")
+    raise
 
 from src.api_providers import APIProviderFactory
 

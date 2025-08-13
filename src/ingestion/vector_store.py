@@ -23,11 +23,19 @@ try:
     from langchain_chroma import Chroma
     from langchain.schema import Document
     from loguru import logger
+    CHROMA_AVAILABLE = True
 except ImportError as e:
     logger = None
-    print(f"Import warning: {e}")
-    # Re-raise the error to prevent silent failures
-    raise
+    print(f"ChromaDB import warning: {e}")
+    CHROMA_AVAILABLE = False
+    # Import fallback components
+    try:
+        from langchain.text_splitter import RecursiveCharacterTextSplitter
+        from langchain.schema import Document
+        from loguru import logger
+    except ImportError as fallback_e:
+        print(f"Critical import error: {fallback_e}")
+        raise
 
 from config.settings import settings
 from src.utils import DocumentUtils
@@ -43,6 +51,11 @@ class VectorStoreManager:
     
     def __init__(self, persist_directory: Optional[str] = None):
         """Initialize vector store manager."""
+        if not CHROMA_AVAILABLE:
+            raise ImportError(
+                "ChromaDB is not available. Please install required dependencies or use alternative vector store."
+            )
+            
         self.persist_directory = persist_directory or settings.chroma_persist_directory
         self.collection_name = "legal_documents"
         self._vectorstore = None

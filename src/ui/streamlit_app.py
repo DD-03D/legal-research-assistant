@@ -29,14 +29,22 @@ except ImportError as e:
 
 from config.settings import settings
 from src.ingestion.document_processor import DocumentProcessorFactory, process_document
-# Try to import primary vector store, fallback to alternative if needed
+
+# Use unified pipeline that handles all vector store implementations
 try:
-    from src.ingestion.vector_store import DocumentIngestionPipeline
-    VECTOR_STORE_TYPE = "ChromaDB"
-except (ImportError, RuntimeError) as e:
-    logger.warning(f"ChromaDB not available ({e}), using alternative vector store")
-    from src.ingestion.alternative_vector_store import create_alternative_vector_store
-    VECTOR_STORE_TYPE = "Alternative"
+    from src.ingestion.unified_pipeline import UnifiedDocumentIngestionPipeline as DocumentIngestionPipeline
+    VECTOR_STORE_TYPE = "Unified"
+    logger.info("Using unified document ingestion pipeline")
+except ImportError as e:
+    logger.error(f"Failed to import unified pipeline: {e}")
+    # Fallback to direct import attempts
+    try:
+        from src.ingestion.vector_store import DocumentIngestionPipeline
+        VECTOR_STORE_TYPE = "ChromaDB"
+    except (ImportError, RuntimeError) as e:
+        logger.warning(f"ChromaDB not available ({e}), using alternative vector store")
+        from src.ingestion.alternative_vector_store import create_alternative_vector_store
+        VECTOR_STORE_TYPE = "Alternative"
     
 from src.generation.legal_rag import LegalResponseGenerator, ResponseFormatter
 from src.evaluation.metrics import PerformanceEvaluator
