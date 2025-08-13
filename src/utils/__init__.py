@@ -10,6 +10,16 @@ from loguru import logger
 import tiktoken
 from config.settings import settings
 
+# Import SQLite fix utilities
+try:
+    from .sqlite_fix import fix_sqlite, get_sqlite_info
+    __all__ = ['DocumentUtils', 'CitationFormatter', 'ConflictDetector', 
+               'setup_logging', 'validate_file_type', 'format_file_size',
+               'fix_sqlite', 'get_sqlite_info']
+except ImportError:
+    __all__ = ['DocumentUtils', 'CitationFormatter', 'ConflictDetector', 
+               'setup_logging', 'validate_file_type', 'format_file_size']
+
 
 class DocumentUtils:
     """Utility functions for document processing."""

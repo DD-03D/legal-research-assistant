@@ -8,7 +8,15 @@ from pathlib import Path
 import json
 import threading
 
+# SQLite compatibility check before importing chromadb
 try:
+    # Apply SQLite fix if available
+    try:
+        from src.utils.sqlite_fix import fix_sqlite
+        fix_sqlite()
+    except ImportError:
+        pass
+    
     import chromadb
     from chromadb.config import Settings
     from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -18,6 +26,8 @@ try:
 except ImportError as e:
     logger = None
     print(f"Import warning: {e}")
+    # Re-raise the error to prevent silent failures
+    raise
 
 from config.settings import settings
 from src.utils import DocumentUtils

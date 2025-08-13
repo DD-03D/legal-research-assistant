@@ -11,6 +11,13 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
+# SQLite compatibility fix for Streamlit Cloud
+try:
+    from src.utils.sqlite_fix import fix_sqlite
+    fix_sqlite()
+except ImportError:
+    pass
+
 # Import and setup
 from src.utils import setup_logging
 from src.ui.streamlit_app import main

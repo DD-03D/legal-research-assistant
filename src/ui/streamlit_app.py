@@ -29,7 +29,15 @@ except ImportError as e:
 
 from config.settings import settings
 from src.ingestion.document_processor import DocumentProcessorFactory, process_document
-from src.ingestion.vector_store import DocumentIngestionPipeline
+# Try to import primary vector store, fallback to alternative if needed
+try:
+    from src.ingestion.vector_store import DocumentIngestionPipeline
+    VECTOR_STORE_TYPE = "ChromaDB"
+except (ImportError, RuntimeError) as e:
+    logger.warning(f"ChromaDB not available ({e}), using alternative vector store")
+    from src.ingestion.alternative_vector_store import create_alternative_vector_store
+    VECTOR_STORE_TYPE = "Alternative"
+    
 from src.generation.legal_rag import LegalResponseGenerator, ResponseFormatter
 from src.evaluation.metrics import PerformanceEvaluator
 from src.utils import validate_file_type, format_file_size
