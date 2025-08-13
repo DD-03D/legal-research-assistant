@@ -31,9 +31,9 @@ try:
         raise ImportError("ChromaDB not available")
 except ImportError:
     try:
-        from src.ingestion.alternative_vector_store import create_alternative_vector_store
+        from src.ingestion.alternative_vector_store import AlternativeVectorStore
         VECTOR_STORE_TYPE = "Alternative"
-        vector_store_class = create_alternative_vector_store
+        vector_store_class = AlternativeVectorStore
         logger.info("Using alternative vector store implementation")
     except ImportError as e:
         logger.error(f"No vector store implementation available: {e}")
@@ -100,13 +100,23 @@ class UnifiedDocumentIngestionPipeline:
             # Split documents if needed
             split_docs = self.text_splitter.split_documents(documents)
             
-            # Add to vector store
-            if hasattr(self.vector_store, 'add_documents'):
-                doc_ids = self.vector_store.add_documents(split_docs)
-            elif hasattr(self.vector_store, 'ingest_documents'):
-                doc_ids = self.vector_store.ingest_documents(split_docs)
-            else:
-                raise AttributeError("Vector store has no document ingestion method")
+            # Add to vector store with debugging for ingest_file method
+            try:
+                logger.info(f"Vector store type: {type(self.vector_store)}")
+                logger.info(f"Vector store methods: {[method for method in dir(self.vector_store) if not method.startswith('_')]}")
+                
+                if hasattr(self.vector_store, 'add_documents'):
+                    logger.info("Using add_documents method")
+                    doc_ids = self.vector_store.add_documents(split_docs)
+                elif hasattr(self.vector_store, 'ingest_documents'):
+                    logger.info("Using ingest_documents method")
+                    doc_ids = self.vector_store.ingest_documents(split_docs)
+                else:
+                    available_methods = [method for method in dir(self.vector_store) if not method.startswith('_')]
+                    raise AttributeError(f"Vector store has no document ingestion method. Available methods: {available_methods}")
+            except Exception as ve:
+                logger.error(f"Vector store operation failed: {ve}")
+                raise
             
             return {
                 'success': True,
