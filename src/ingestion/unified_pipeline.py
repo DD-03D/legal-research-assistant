@@ -83,37 +83,41 @@ class UnifiedDocumentIngestionPipeline:
             # Use the existing document processor which handles file reading internally
             processed_doc = process_document(file_path)
             
-            # Create Document objects for vector store
-            documents = []
-            for section in processed_doc.get('sections', []):
-                doc = Document(
-                    page_content=section['content'],
-                    metadata={
-                        'source': file_path,
-                        'section_number': section['section_number'],
-                        'document_type': processed_doc.get('document_type', 'unknown'),
-                        'filename': Path(file_path).name
-                    }
-                )
-                documents.append(doc)
-            
-            # Split documents if needed
-            split_docs = self.text_splitter.split_documents(documents)
-            
-            # Add to vector store with debugging for ingest_file method
+            # Add to vector store based on which vector store implementation we're using
             try:
                 logger.info(f"Vector store type: {type(self.vector_store)}")
                 logger.info(f"Vector store methods: {[method for method in dir(self.vector_store) if not method.startswith('_')]}")
                 
-                if hasattr(self.vector_store, 'add_documents'):
-                    logger.info("Using add_documents method")
+                # Check if it's the ChromaDB VectorStoreManager
+                if hasattr(self.vector_store, 'add_document') and 'VectorStoreManager' in str(type(self.vector_store)):
+                    logger.info("Using VectorStoreManager.add_document method with processed document data")
+                    doc_ids = self.vector_store.add_document(processed_doc)
+                
+                # Check if it's the alternative vector store that expects Document objects
+                elif hasattr(self.vector_store, 'add_documents'):
+                    logger.info("Using add_documents method with Document objects")
+                    # Create Document objects for alternative vector store
+                    documents = []
+                    for section in processed_doc.get('sections', []):
+                        doc = Document(
+                            page_content=section['content'],
+                            metadata={
+                                'source': file_path,
+                                'section_number': section['section_number'],
+                                'document_type': processed_doc.get('document_type', 'unknown'),
+                                'filename': Path(file_path).name
+                            }
+                        )
+                        documents.append(doc)
+                    
+                    # Split documents if needed
+                    split_docs = self.text_splitter.split_documents(documents)
                     doc_ids = self.vector_store.add_documents(split_docs)
-                elif hasattr(self.vector_store, 'ingest_documents'):
-                    logger.info("Using ingest_documents method")
-                    doc_ids = self.vector_store.ingest_documents(split_docs)
+                
                 else:
                     available_methods = [method for method in dir(self.vector_store) if not method.startswith('_')]
-                    raise AttributeError(f"Vector store has no document ingestion method. Available methods: {available_methods}")
+                    raise AttributeError(f"Vector store has no supported ingestion method. Available methods: {available_methods}")
+                    
             except Exception as ve:
                 logger.error(f"Vector store operation failed: {ve}")
                 raise
@@ -122,7 +126,7 @@ class UnifiedDocumentIngestionPipeline:
                 'success': True,
                 'document_id': processed_doc.get('document_id'),
                 'sections_count': len(processed_doc.get('sections', [])),
-                'chunks_count': len(split_docs),
+                'chunks_count': len(doc_ids) if doc_ids else 0,
                 'vector_store_type': VECTOR_STORE_TYPE
             }
             
