@@ -74,6 +74,32 @@ class UnifiedDocumentIngestionPipeline:
             logger.error(f"Failed to initialize vector store: {e}")
             raise
     
+    def ingest_file(self, file_path: str, content: str) -> Dict[str, Any]:
+        """
+        Ingest a file - wrapper method for backward compatibility.
+        This method maintains compatibility with existing code.
+        """
+        return self.process_and_ingest_document(file_path, content)
+    
+    def ingest_documents(self, documents: List[Document]) -> List[str]:
+        """
+        Ingest pre-processed documents directly.
+        """
+        try:
+            # Add to vector store
+            if hasattr(self.vector_store, 'add_documents'):
+                doc_ids = self.vector_store.add_documents(documents)
+            elif hasattr(self.vector_store, 'ingest_documents'):
+                doc_ids = self.vector_store.ingest_documents(documents)
+            else:
+                raise AttributeError("Vector store has no document ingestion method")
+            
+            return doc_ids
+            
+        except Exception as e:
+            logger.error(f"Failed to ingest documents: {e}")
+            raise
+
     def process_and_ingest_document(self, file_path: str, content: str) -> Dict[str, Any]:
         """Process and ingest a single document."""
         try:

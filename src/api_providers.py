@@ -83,10 +83,37 @@ class GeminiProvider(EmbeddingProvider, LLMProvider):
     """Gemini provider implementation."""
     
     def __init__(self):
-        if not settings.gemini_api_key:
-            raise ValueError("Gemini API key is required")
+        # Check for API key in multiple sources
+        api_key = self._get_gemini_api_key()
+        if not api_key:
+            raise ValueError(
+                "Gemini API key is required. Please set it in:\n"
+                "1. Streamlit Cloud secrets (GEMINI_API_KEY)\n"
+                "2. Environment variable (GEMINI_API_KEY)\n"
+                "3. .env file (GEMINI_API_KEY)"
+            )
         # Ensure event loop exists for async operations
         ensure_event_loop()
+    
+    def _get_gemini_api_key(self) -> Optional[str]:
+        """Get Gemini API key from various sources."""
+        import os
+        
+        # Try Streamlit secrets first
+        try:
+            import streamlit as st
+            if hasattr(st, 'secrets') and 'GEMINI_API_KEY' in st.secrets:
+                return st.secrets['GEMINI_API_KEY']
+        except Exception:
+            pass
+        
+        # Try environment variable
+        api_key = os.getenv('GEMINI_API_KEY')
+        if api_key:
+            return api_key
+        
+        # Try settings
+        return getattr(settings, 'gemini_api_key', None)
     
     def get_embeddings(self):
         """Get Gemini embeddings."""
@@ -94,9 +121,13 @@ class GeminiProvider(EmbeddingProvider, LLMProvider):
             from langchain_google_genai import GoogleGenerativeAIEmbeddings
             # Ensure event loop for embeddings
             ensure_event_loop()
+            
+            # Get API key dynamically
+            api_key = self._get_gemini_api_key()
+            
             return GoogleGenerativeAIEmbeddings(
                 model=settings.gemini_embedding_model,
-                google_api_key=settings.gemini_api_key
+                google_api_key=api_key
             )
         except ImportError as e:
             logger.error(f"Failed to import Gemini embeddings: {e}")
@@ -111,11 +142,15 @@ class GeminiProvider(EmbeddingProvider, LLMProvider):
             from langchain_google_genai import ChatGoogleGenerativeAI
             # Ensure event loop for LLM
             ensure_event_loop()
+            
+            # Get API key dynamically
+            api_key = self._get_gemini_api_key()
+            
             return ChatGoogleGenerativeAI(
                 model=settings.gemini_llm_model,
                 temperature=settings.temperature,
-                max_output_tokens=settings.max_output_tokens,
-                google_api_key=settings.gemini_api_key
+                max_tokens=settings.max_output_tokens,
+                google_api_key=api_key
             )
         except ImportError as e:
             logger.error(f"Failed to import Gemini LLM: {e}")

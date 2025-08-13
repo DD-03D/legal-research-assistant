@@ -12,6 +12,24 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+def get_api_key_from_sources(key_name: str) -> str:
+    """Get API key from multiple sources in order of priority."""
+    # 1. Try Streamlit secrets first
+    try:
+        import streamlit as st
+        if hasattr(st, 'secrets') and key_name in st.secrets:
+            return st.secrets[key_name]
+    except Exception:
+        pass
+    
+    # 2. Try environment variable
+    env_value = os.getenv(key_name)
+    if env_value:
+        return env_value
+    
+    # 3. Return empty string if not found
+    return ""
+
 class Settings(BaseSettings):
     """Application settings and configuration."""
     
@@ -23,9 +41,9 @@ class Settings(BaseSettings):
     # API Provider Selection
     api_provider: str = Field(default="gemini", env="API_PROVIDER")  # "openai" or "gemini"
     
-    # API Keys
-    openai_api_key: str = Field(default="", env="OPENAI_API_KEY")
-    gemini_api_key: str = Field(default="", env="GEMINI_API_KEY")
+    # API Keys - with dynamic loading
+    openai_api_key: str = Field(default_factory=lambda: get_api_key_from_sources("OPENAI_API_KEY"))
+    gemini_api_key: str = Field(default_factory=lambda: get_api_key_from_sources("GEMINI_API_KEY"))
     huggingface_api_token: Optional[str] = Field(default=None, env="HUGGINGFACE_API_TOKEN")
     pinecone_api_key: Optional[str] = Field(default=None, env="PINECONE_API_KEY")
     
