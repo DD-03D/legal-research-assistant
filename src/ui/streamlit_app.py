@@ -58,8 +58,9 @@ class LegalResearchUI:
         """Initialize the UI."""
         self.setup_page_config()
         self.initialize_session_state()
-        self.ingestion_pipeline = None
-        self.response_generator = None
+        # Reuse persisted instances to avoid creating new vector stores on rerun
+        self.ingestion_pipeline = st.session_state.get('ingestion_pipeline')
+        self.response_generator = st.session_state.get('response_generator')
         self.performance_evaluator = PerformanceEvaluator()
     
     def setup_page_config(self):
@@ -457,6 +458,8 @@ class LegalResearchUI:
                 
                 self.ingestion_pipeline = DocumentIngestionPipeline()
                 st.success("✅ Document processing pipeline initialized")
+                # Persist pipeline for reuse across reruns
+                st.session_state.ingestion_pipeline = self.ingestion_pipeline
             except Exception as e:
                 st.error(f"❌ Failed to initialize document processing pipeline: {e}")
                 if logger:
@@ -527,6 +530,8 @@ class LegalResearchUI:
         if processed_docs:
             st.success(f"Successfully processed {len(processed_docs)} documents!")
             st.session_state.vector_store_status = "Ready"
+            # Ensure pipeline is persisted after successful processing
+            st.session_state.ingestion_pipeline = self.ingestion_pipeline
         
         # Initialize response generator if not already done
         # Initialize response generator with event loop handling
@@ -543,7 +548,19 @@ class LegalResearchUI:
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
                 
-                self.response_generator = LegalResponseGenerator()
+                # Prefer retriever backed by the shared vector store
+                if self.ingestion_pipeline and hasattr(self.ingestion_pipeline, 'vector_store'):
+                    from src.retrieval.retriever import LegalDocumentRetriever
+                    retriever = LegalDocumentRetriever(self.ingestion_pipeline.vector_store)
+                    self.response_generator = LegalResponseGenerator(retriever=retriever)
+                    if logger:
+                        logger.info("Response generator initialized with shared vector store after upload")
+                else:
+                    self.response_generator = LegalResponseGenerator()
+                    if logger:
+                        logger.warning("Response generator initialized without shared vector store after upload")
+                # Persist generator for reuse
+                st.session_state.response_generator = self.response_generator
             except Exception as e:
                 st.error(f"❌ Failed to initialize response generator: {e}")
                 if logger:
@@ -577,6 +594,8 @@ class LegalResearchUI:
                     self.response_generator = LegalResponseGenerator()
                     if logger:
                         logger.warning("Response generator initialized with new vector store")
+                # Persist generator for reuse across reruns
+                st.session_state.response_generator = self.response_generator
             except Exception as e:
                 st.error(f"❌ Failed to initialize response generator: {e}")
                 if logger:
