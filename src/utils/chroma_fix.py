@@ -7,21 +7,28 @@ import warnings
 import tempfile
 from loguru import logger
 
+# Force-disable telemetry as early as possible
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
+os.environ["CHROMA_ANONYMIZED_TELEMETRY"] = "False"
+os.environ["CHROMA_TELEMETRY_ENABLED"] = "0"
+os.environ["CHROMA_SERVER_NOFILE"] = os.environ.get("CHROMA_SERVER_NOFILE", "1024")
+
 def fix_chroma_telemetry():
     """Fix ChromaDB telemetry issues in deployment environments."""
     try:
         # Disable ChromaDB telemetry
         os.environ["ANONYMIZED_TELEMETRY"] = "False"
-        os.environ["CHROMA_SERVER_NOFILE"] = "1"
+        os.environ["CHROMA_ANONYMIZED_TELEMETRY"] = "False"
+        os.environ["CHROMA_TELEMETRY_ENABLED"] = "0"
         os.environ["CHROMA_SERVER_HTTP_PORT"] = "8000"
-        
+
         # Suppress telemetry warnings
         warnings.filterwarnings("ignore", message=".*telemetry.*")
         warnings.filterwarnings("ignore", message=".*capture.*")
-        
+
         logger.info("✅ ChromaDB telemetry disabled")
         return True
-        
+
     except Exception as e:
         logger.warning(f"Could not disable ChromaDB telemetry: {e}")
         return False

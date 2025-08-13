@@ -588,21 +588,32 @@ class LegalResearchUI:
             with st.spinner("Analyzing legal documents..."):
                 # Measure performance
                 start_time = time.time()
-                
+
                 # Generate response
                 response = self.response_generator.generate_response(
                     question=query,
                     document_filters={'document_type': document_filter} if document_filter else None
                 )
-                
-                # Measure latency
-                latency_data = self.performance_evaluator.measure_end_to_end_latency(
-                    query, self.response_generator
-                )
-            
-            # Store response and history
-            st.session_state.current_response = response
-            
+
+                # Store response immediately so we always render something
+                st.session_state.current_response = response
+
+                # Measure latency (non-blocking for UI)
+                try:
+                    latency_data = self.performance_evaluator.measure_end_to_end_latency(
+                        query, self.response_generator
+                    )
+                except Exception as m_err:
+                    latency_data = {
+                        'query': query,
+                        'total_latency': None,
+                        'retrieval_latency': None,
+                        'generation_latency': None,
+                        'timestamp': response.get('timestamp', ''),
+                        'note': f'Latency measurement failed: {m_err}'
+                    }
+
+            # Store history
             query_entry = {
                 'query': query,
                 'response': response,
