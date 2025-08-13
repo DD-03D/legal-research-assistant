@@ -61,15 +61,13 @@ class AlternativeVectorStore:
             Ingestion result summary
         """
         try:
-            # Read file content
-            content = self._read_file_content(file_path)
-            
-            # Process document using the document processor
+            # Process document using the document processor (which handles file reading)
             try:
                 from src.ingestion.document_processor import process_document
-                processed_doc = process_document(file_path, content)
+                processed_doc = process_document(file_path)
             except ImportError:
-                # Fallback to simple processing
+                # Fallback to simple processing if document processor not available
+                content = self._read_file_content(file_path)
                 processed_doc = {
                     'document_id': f"doc_{hash(content)%10000}",
                     'sections': [{'content': content, 'section_number': '1'}],
