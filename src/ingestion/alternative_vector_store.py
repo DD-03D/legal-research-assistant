@@ -50,6 +50,107 @@ class AlternativeVectorStore:
         # Try to load existing vector store
         self._load_vectorstore()
     
+    def ingest_file(self, file_path: str) -> Dict[str, Any]:
+        """
+        Ingest a single file into the alternative vector store.
+        
+        Args:
+            file_path: Path to the file to ingest
+            
+        Returns:
+            Ingestion result summary
+        """
+        try:
+            # Read file content
+            content = self._read_file_content(file_path)
+            
+            # Process document using the document processor
+            try:
+                from src.ingestion.document_processor import process_document
+                processed_doc = process_document(file_path, content)
+            except ImportError:
+                # Fallback to simple processing
+                processed_doc = {
+                    'document_id': f"doc_{hash(content)%10000}",
+                    'sections': [{'content': content, 'section_number': '1'}],
+                    'document_type': 'document'
+                }
+            
+            # Create Document objects
+            documents = []
+            for section in processed_doc.get('sections', []):
+                doc = Document(
+                    page_content=section['content'],
+                    metadata={
+                        'source': file_path,
+                        'section_number': section['section_number'],
+                        'document_type': processed_doc.get('document_type', 'unknown'),
+                        'filename': Path(file_path).name
+                    }
+                )
+                documents.append(doc)
+            
+            # Add to vector store
+            doc_ids = self.add_documents(documents)
+            
+            return {
+                'success': True,
+                'document_id': processed_doc.get('document_id'),
+                'sections_count': len(processed_doc.get('sections', [])),
+                'chunks_count': len(documents),
+                'vector_store_type': 'Alternative'
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to ingest file {file_path}: {e}")
+            return {
+                'success': False,
+                'error': str(e),
+                'document_id': None
+            }
+    
+    def _read_file_content(self, file_path: str) -> str:
+        """Read content from file based on file type."""
+        file_path = Path(file_path)
+        
+        if file_path.suffix.lower() == '.pdf':
+            try:
+                import PyMuPDF as fitz
+                doc = fitz.open(str(file_path))
+                content = ""
+                for page in doc:
+                    content += page.get_text()
+                doc.close()
+                return content
+            except ImportError:
+                try:
+                    from pypdf import PdfReader
+                    reader = PdfReader(str(file_path))
+                    content = ""
+                    for page in reader.pages:
+                        content += page.extract_text()
+                    return content
+                except ImportError:
+                    raise ImportError("No PDF reader available. Install PyMuPDF or pypdf.")
+        
+        elif file_path.suffix.lower() in ['.docx', '.doc']:
+            try:
+                from docx import Document as DocxDocument
+                doc = DocxDocument(str(file_path))
+                content = ""
+                for paragraph in doc.paragraphs:
+                    content += paragraph.text + "\n"
+                return content
+            except ImportError:
+                raise ImportError("python-docx not available for Word documents.")
+        
+        elif file_path.suffix.lower() == '.txt':
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                return f.read()
+        
+        else:
+            raise ValueError(f"Unsupported file type: {file_path.suffix}")
+
     def add_documents(self, documents: List[Document]) -> List[str]:
         """Add documents to the vector store."""
         try:

@@ -74,10 +74,69 @@ class UnifiedDocumentIngestionPipeline:
             logger.error(f"Failed to initialize vector store: {e}")
             raise
     
-    def ingest_file(self, file_path: str, content: str) -> Dict[str, Any]:
+    def ingest_file(self, file_path: str) -> Dict[str, Any]:
         """
-        Ingest a file - wrapper method for backward compatibility.
-        This method maintains compatibility with existing code.
+        Ingest a file - reads content and processes it.
+        Maintains compatibility with existing code that only passes file_path.
+        """
+        try:
+            # Read file content based on file type
+            content = self._read_file_content(file_path)
+            return self.process_and_ingest_document(file_path, content)
+        except Exception as e:
+            logger.error(f"Failed to ingest file {file_path}: {e}")
+            return {
+                'success': False,
+                'error': str(e),
+                'document_id': None
+            }
+    
+    def _read_file_content(self, file_path: str) -> str:
+        """Read content from file based on file type."""
+        file_path = Path(file_path)
+        
+        if file_path.suffix.lower() == '.pdf':
+            try:
+                import PyMuPDF as fitz
+                doc = fitz.open(str(file_path))
+                content = ""
+                for page in doc:
+                    content += page.get_text()
+                doc.close()
+                return content
+            except ImportError:
+                try:
+                    from pypdf import PdfReader
+                    reader = PdfReader(str(file_path))
+                    content = ""
+                    for page in reader.pages:
+                        content += page.extract_text()
+                    return content
+                except ImportError:
+                    raise ImportError("No PDF reader available. Install PyMuPDF or pypdf.")
+        
+        elif file_path.suffix.lower() in ['.docx', '.doc']:
+            try:
+                from docx import Document as DocxDocument
+                doc = DocxDocument(str(file_path))
+                content = ""
+                for paragraph in doc.paragraphs:
+                    content += paragraph.text + "\n"
+                return content
+            except ImportError:
+                raise ImportError("python-docx not available for Word documents.")
+        
+        elif file_path.suffix.lower() == '.txt':
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                return f.read()
+        
+        else:
+            raise ValueError(f"Unsupported file type: {file_path.suffix}")
+    
+    def ingest_file_with_content(self, file_path: str, content: str) -> Dict[str, Any]:
+        """
+        Ingest a file with pre-read content.
+        Use this method when you already have the file content.
         """
         return self.process_and_ingest_document(file_path, content)
     
