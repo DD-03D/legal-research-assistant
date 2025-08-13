@@ -124,7 +124,10 @@ class UnifiedDocumentIngestionPipeline:
             
             return {
                 'success': True,
+                'filename': Path(file_path).name,
                 'document_id': processed_doc.get('document_id'),
+                'sections_added': len(doc_ids) if doc_ids else 0,
+                'total_tokens': processed_doc.get('token_count', 0),
                 'sections_count': len(processed_doc.get('sections', [])),
                 'chunks_count': len(doc_ids) if doc_ids else 0,
                 'vector_store_type': VECTOR_STORE_TYPE
