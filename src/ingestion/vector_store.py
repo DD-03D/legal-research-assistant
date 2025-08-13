@@ -19,8 +19,9 @@ try:
     
     # Apply ChromaDB telemetry fix
     try:
-        from src.utils.chroma_fix import fix_chroma_telemetry
+        from src.utils.chroma_fix import fix_chroma_telemetry, reset_chroma_client
         fix_chroma_telemetry()
+        reset_chroma_client()
     except ImportError:
         pass
     
@@ -89,15 +90,55 @@ class VectorStoreManager:
     def vectorstore(self) -> Chroma:
         """Get or create vector store instance."""
         if self._vectorstore is None:
-            self._vectorstore = Chroma(
-                collection_name=self.collection_name,
-                embedding_function=self.embeddings,
-                persist_directory=self.persist_directory,
-                client_settings=Settings(
-                    anonymized_telemetry=False,
-                    is_persistent=True
+            try:
+                # Try to reset any existing ChromaDB instance
+                try:
+                    import chromadb
+                    chromadb.reset()
+                except:
+                    pass
+                
+                self._vectorstore = Chroma(
+                    collection_name=self.collection_name,
+                    embedding_function=self.embeddings,
+                    persist_directory=self.persist_directory,
+                    client_settings=Settings(
+                        anonymized_telemetry=False,
+                        is_persistent=True,
+                        allow_reset=True
+                    )
                 )
-            )
+            except Exception as e:
+                if "already exists" in str(e).lower():
+                    # Handle existing instance by using a unique directory
+                    if logger:
+                        logger.warning(f"ChromaDB instance conflict, using unique directory: {e}")
+                    
+                    try:
+                        from src.utils.chroma_fix import get_unique_persist_directory
+                        unique_dir = get_unique_persist_directory()
+                        self.persist_directory = unique_dir
+                        
+                        self._vectorstore = Chroma(
+                            collection_name=self.collection_name,
+                            embedding_function=self.embeddings,
+                            persist_directory=unique_dir,
+                            client_settings=Settings(
+                                anonymized_telemetry=False,
+                                is_persistent=True,
+                                allow_reset=True
+                            )
+                        )
+                        if logger:
+                            logger.info(f"Created ChromaDB with unique directory: {unique_dir}")
+                    except Exception as fallback_e:
+                        if logger:
+                            logger.error(f"Failed to create ChromaDB with unique directory: {fallback_e}")
+                        raise
+                else:
+                    if logger:
+                        logger.error(f"Failed to create ChromaDB instance: {e}")
+                    raise
         return self._vectorstore
     
     def add_document(self, document_data: Dict[str, Any]) -> List[str]:

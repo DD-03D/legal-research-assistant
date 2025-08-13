@@ -6,9 +6,27 @@ import re
 import hashlib
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
-from loguru import logger
 import tiktoken
-from config.settings import settings
+
+# Handle missing logger gracefully
+try:
+    from loguru import logger
+except ImportError:
+    logger = None
+
+# Handle missing settings gracefully
+try:
+    from config.settings import settings
+except ImportError:
+    # Create a minimal settings object if config is not available
+    class MinimalSettings:
+        chunk_size = 1000
+        chunk_overlap = 200
+        log_level = "INFO"
+    
+    settings = MinimalSettings()
+    if logger:
+        logger.warning("Using minimal settings - config.settings not available")
 
 # Import SQLite fix utilities
 try:

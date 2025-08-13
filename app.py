@@ -11,24 +11,48 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
+# Also add src directory to path for Streamlit Cloud
+src_path = project_root / "src"
+if src_path.exists():
+    sys.path.insert(0, str(src_path))
+
 # SQLite compatibility fix for Streamlit Cloud
 try:
     from src.utils.sqlite_fix import fix_sqlite
     fix_sqlite()
-except ImportError:
-    pass
+except ImportError as e:
+    print(f"SQLite fix import warning: {e}")
 
-# Import and setup
-from src.utils import setup_logging
-from src.ui.streamlit_app import main
+# Import and setup with error handling
+try:
+    from src.utils import setup_logging
+    setup_logging()
+except ImportError as e:
+    print(f"Logging setup warning: {e}")
+
+try:
+    from src.ui.streamlit_app import main
+except ImportError as e:
+    print(f"Main app import error: {e}")
+    # Try alternative import
+    try:
+        import streamlit as st
+        st.error(f"Failed to import main application: {e}")
+        st.stop()
+    except:
+        print("Critical import failure - cannot start application")
+        sys.exit(1)
 
 def run_app():
     """Run the Legal Research Assistant application."""
-    # Setup logging
-    setup_logging()
-    
-    # Run the Streamlit app
-    main()
+    try:
+        # Run the Streamlit app
+        main()
+    except Exception as e:
+        print(f"Application error: {e}")
+        import streamlit as st
+        st.error(f"Application failed to start: {e}")
+        st.stop()
 
 if __name__ == "__main__":
     run_app()
