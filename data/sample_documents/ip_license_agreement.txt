@@ -1,0 +1,65 @@
+INTELLECTUAL PROPERTY LICENSE AGREEMENT
+
+This Intellectual Property License Agreement ("Agreement") is entered into on March 10, 2024, between InnoTech Solutions Inc., a Delaware corporation ("Licensor"), and Global Manufacturing Corp., a Texas corporation ("Licensee").
+
+CLAUSE 1. GRANT OF LICENSE
+1.1 Subject to the terms of this Agreement, Licensor hereby grants to Licensee a non-exclusive, non-transferable license to use the licensed technology described in Schedule A.
+1.2 The license granted herein is limited to use in manufacturing applications within the United States.
+
+CLAUSE 2. LICENSE FEES AND ROYALTIES
+2.1 Initial License Fee: Licensee shall pay an initial license fee of $500,000 upon execution of this Agreement.
+2.2 Royalty Payments: Licensee shall pay Licensor a royalty of 5% of net sales of products incorporating the licensed technology.
+2.3 Minimum Royalty: Licensee guarantees minimum annual royalty payments of $100,000.
+
+CLAUSE 3. TERM AND RENEWAL
+3.1 Initial Term: This Agreement shall have an initial term of five (5) years from the effective date.
+3.2 Renewal: This Agreement may be renewed for additional five-year terms upon mutual written agreement.
+3.3 Termination: Either party may terminate this Agreement upon material breach that remains uncured for sixty (60) days.
+
+CLAUSE 4. INTELLECTUAL PROPERTY OWNERSHIP
+4.1 Licensor retains all right, title, and interest in the licensed technology and any improvements thereto.
+4.2 Licensee shall not acquire any ownership rights in the licensed technology by virtue of this Agreement.
+
+CLAUSE 5. RESTRICTIONS ON USE
+5.1 Licensee shall not sublicense, transfer, or assign this license without prior written consent of Licensor.
+5.2 Licensee shall not reverse engineer, decompile, or attempt to derive the source code of the licensed technology.
+5.3 Licensee shall implement reasonable security measures to protect the confidentiality of the licensed technology.
+
+CLAUSE 6. IMPROVEMENTS AND MODIFICATIONS
+6.1 Any improvements or modifications to the licensed technology made by Licensee shall be owned by Licensor.
+6.2 Licensee grants Licensor a perpetual, royalty-free license to use any such improvements or modifications.
+
+CLAUSE 7. WARRANTIES AND DISCLAIMERS
+7.1 Licensor warrants that it has the right to grant the license set forth herein.
+7.2 EXCEPT AS EXPRESSLY SET FORTH HEREIN, LICENSOR MAKES NO WARRANTIES AND DISCLAIMS ALL IMPLIED WARRANTIES, INCLUDING WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+CLAUSE 8. INDEMNIFICATION
+8.1 Licensor shall indemnify Licensee against third-party claims that the licensed technology infringes valid patents.
+8.2 Licensee shall indemnify Licensor against claims arising from Licensee's use of the licensed technology in breach of this Agreement.
+
+CLAUSE 9. LIABILITY LIMITATIONS
+9.1 IN NO EVENT SHALL EITHER PARTY BE LIABLE FOR CONSEQUENTIAL, INCIDENTAL, OR PUNITIVE DAMAGES.
+9.2 Each party's total liability shall not exceed the total fees paid under this Agreement in the twelve months preceding the claim.
+
+CLAUSE 10. CONFIDENTIALITY
+10.1 The licensed technology and all related information shall be treated as confidential by Licensee.
+10.2 Licensee's confidentiality obligations shall survive termination of this Agreement for a period of ten (10) years.
+
+CLAUSE 11. COMPLIANCE WITH LAWS
+11.1 Licensee shall comply with all applicable laws and regulations in its use of the licensed technology.
+11.2 Licensee shall be responsible for obtaining any necessary export licenses or permits.
+
+CLAUSE 12. DISPUTE RESOLUTION
+12.1 Any disputes arising under this Agreement shall be resolved through binding arbitration under the rules of the International Chamber of Commerce.
+12.2 The arbitration shall be conducted in New York, New York.
+
+CLAUSE 13. GOVERNING LAW
+13.1 This Agreement shall be governed by the laws of the State of New York, without regard to conflict of law principles.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement.
+
+INNOTECH SOLUTIONS INC.               GLOBAL MANUFACTURING CORP.
+
+_____________________                 _____________________
+Robert Wilson, CEO                    Lisa Anderson, President
+Date: March 10, 2024                Date: March 10, 2024

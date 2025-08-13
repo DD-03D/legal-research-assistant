@@ -1,0 +1,44 @@
+# Core Framework Dependencies
+langchain>=0.1.0,<0.3.0
+langchain-openai>=0.0.5,<0.2.0
+langchain-community>=0.0.10,<0.3.0
+streamlit>=1.28.0,<2.0.0
+
+# Vector Database
+chromadb>=0.4.0,<0.5.0
+sentence-transformers>=2.2.0,<3.0.0
+
+# Document Processing
+PyMuPDF>=1.23.0,<2.0.0
+python-docx>=1.0.0,<2.0.0
+pypdf>=3.0.0,<4.0.0
+
+# AI/ML Dependencies
+openai>=1.0.0,<2.0.0
+tiktoken>=0.5.0,<1.0.0
+transformers>=4.30.0,<5.0.0
+
+# Data Processing
+pandas>=2.0.0,<3.0.0
+numpy>=1.24.0,<2.0.0
+scikit-learn>=1.3.0,<2.0.0
+
+# Configuration and Environment
+python-dotenv>=1.0.0,<2.0.0
+pydantic>=2.0.0,<3.0.0
+pydantic-settings>=2.0.0,<3.0.0
+
+# Utilities
+requests>=2.28.0,<3.0.0
+tqdm>=4.65.0,<5.0.0
+loguru>=0.7.0,<1.0.0
+
+# UI/UX
+plotly>=5.15.0,<6.0.0
+
+# Development and Testing (optional)
+pytest>=7.0.0,<8.0.0
+
+# Optional: For advanced embeddings
+# faiss-cpu>=1.7.0,<2.0.0
+# pinecone-client>=2.2.0,<3.0.0

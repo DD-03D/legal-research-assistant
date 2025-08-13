@@ -1,0 +1,54 @@
+SERVICE AGREEMENT
+
+This Service Agreement ("Agreement") is made effective as of February 15, 2024, between Digital Solutions LLC, a California limited liability company ("Provider"), and ABC Corporation, a New York corporation ("Client").
+
+ARTICLE 1. SERVICES
+1.1 Description of Services: Provider agrees to provide web development and digital marketing services as described in Exhibit A attached hereto.
+1.2 Performance Standards: All services shall be performed in a professional manner in accordance with industry standards.
+
+ARTICLE 2. COMPENSATION AND PAYMENT
+2.1 Service Fees: Client shall pay Provider a total fee of $75,000 for the services described in Article 1.
+2.2 Payment Schedule: Payment shall be made as follows:
+    a) 25% upon execution of this Agreement
+    b) 50% upon completion of development phase
+    c) 25% upon final delivery and acceptance
+2.3 Late Payment: A late fee of 1.5% per month may be charged on overdue amounts.
+
+ARTICLE 3. TERM AND TERMINATION
+3.1 Term: This Agreement shall commence on February 15, 2024, and shall continue until completion of services or earlier termination.
+3.2 Termination for Convenience: Either party may terminate this Agreement with sixty (60) days written notice.
+3.3 Termination for Breach: Either party may terminate immediately upon material breach by the other party.
+
+ARTICLE 4. INTELLECTUAL PROPERTY
+4.1 Work Product: All work product created by Provider shall become the exclusive property of Client upon full payment.
+4.2 Pre-existing IP: Provider retains ownership of all pre-existing intellectual property and tools.
+
+ARTICLE 5. LIABILITY AND INDEMNIFICATION
+5.1 Limitation of Liability: Provider's total liability under this Agreement shall not exceed the total fees paid by Client.
+5.2 Indemnification: Each party agrees to indemnify the other against claims arising from their negligent acts or omissions.
+5.3 Disclaimer: PROVIDER DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+ARTICLE 6. CONFIDENTIALITY
+6.1 Confidential Information: Both parties acknowledge they may receive confidential information from the other party.
+6.2 Non-Disclosure: Each party agrees to maintain confidentiality and not disclose confidential information to third parties.
+
+ARTICLE 7. FORCE MAJEURE
+7.1 Neither party shall be liable for delays or failures in performance due to circumstances beyond their reasonable control.
+
+ARTICLE 8. DISPUTE RESOLUTION
+8.1 Mediation: Any disputes shall first be submitted to mediation in accordance with the rules of the American Arbitration Association.
+8.2 Arbitration: If mediation fails, disputes shall be resolved through binding arbitration.
+8.3 Governing Law: This Agreement shall be governed by the laws of California.
+
+ARTICLE 9. MISCELLANEOUS
+9.1 Entire Agreement: This Agreement constitutes the entire agreement between the parties.
+9.2 Amendment: This Agreement may only be amended in writing signed by both parties.
+9.3 Severability: Invalid provisions shall not affect the validity of the remaining provisions.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement.
+
+DIGITAL SOLUTIONS LLC                   ABC CORPORATION
+
+_____________________                   _____________________
+Michael Brown, Managing Member          Jennifer Davis, President
+Date: February 15, 2024               Date: February 15, 2024

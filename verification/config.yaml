@@ -1,0 +1,53 @@
+app_url: "http://localhost:8501"
+docs_path: "verification/sample_docs"
+top_k: 5
+similarity_threshold: 0.8
+run_ragas: false
+timeout_seconds: 30
+expected_sections:
+  contract_a:
+    - "Clause 1"
+    - "Clause 2" 
+    - "Clause 3"
+    - "Clause 4"
+  case_law:
+    - "Section 1"
+    - "Section 2"
+    - "Section 3"
+  statute:
+    - "Section 10"
+    - "Section 15"
+    - "Section 20"
+golden_questions:
+  - id: "Q1"
+    question: "What is the payment deadline in Contract A?"
+    expected_answer: "30 days of invoice"
+    expected_citation: "Contract_A, Clause 2"
+    expected_docs: ["Contract_A"]
+  - id: "Q2"
+    question: "What does the statute say about payment windows?"
+    expected_answer: "within 45 days unless otherwise agreed in writing"
+    expected_citation: "Statute_Example, Section 10"
+    expected_docs: ["Statute_Example"]
+  - id: "Q3"
+    question: "When must delivery occur according to all sources?"
+    expected_answer: "conflict"
+    expected_citation: ["Contract_A, Clause 3", "Statute_Example, Section 15"]
+    expected_docs: ["Contract_A", "Statute_Example"]
+    conflict_aware: true
+  - id: "Q4"
+    question: "What termination notice periods apply?"
+    expected_answer: "conflict"
+    expected_citation: ["Contract_A, Clause 4", "Statute_Example, Section 20"]
+    expected_docs: ["Contract_A", "Statute_Example"]
+    conflict_aware: true
+  - id: "Q5"
+    question: "Define Party A and Party B as per the contract."
+    expected_answer: "Party A = seller, Party B = buyer"
+    expected_citation: "Contract_A, Clause 1"
+    expected_docs: ["Contract_A"]
+  - id: "Q6"
+    question: "What did the court decide regarding delivery obligations?"
+    expected_answer: "timely delivery is a material obligation"
+    expected_citation: "Case_Law_Example, Section 2"
+    expected_docs: ["Case_Law_Example"]

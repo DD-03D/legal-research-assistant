@@ -1,0 +1,49 @@
+EMPLOYMENT AGREEMENT
+
+This Employment Agreement ("Agreement") is entered into on January 1, 2024, between TechCorp Inc., a Delaware corporation ("Company"), and John Smith ("Employee").
+
+SECTION 1. POSITION AND DUTIES
+1.1 Employee shall serve as Senior Software Engineer and shall have such duties and responsibilities as may be assigned by the Company's management.
+1.2 Employee agrees to devote their full business time and attention to the performance of duties under this Agreement.
+
+SECTION 2. COMPENSATION
+2.1 Base Salary: Company shall pay Employee a base salary of $120,000 per year, payable in bi-weekly installments.
+2.2 Benefits: Employee shall be entitled to participate in all employee benefit plans maintained by the Company.
+
+SECTION 3. TERM OF EMPLOYMENT
+3.1 This Agreement shall commence on January 1, 2024, and shall continue until terminated in accordance with this Agreement.
+3.2 Either party may terminate this Agreement at any time with or without cause upon thirty (30) days written notice.
+
+SECTION 4. CONFIDENTIALITY
+4.1 Employee acknowledges that they will have access to confidential information of the Company.
+4.2 Employee agrees to maintain strict confidentiality of all proprietary information during and after employment.
+
+SECTION 5. INTELLECTUAL PROPERTY
+5.1 All inventions, discoveries, and improvements made by Employee during employment shall be the exclusive property of the Company.
+5.2 Employee agrees to assign all rights, title, and interest in such intellectual property to the Company.
+
+SECTION 6. NON-COMPETE
+6.1 During employment and for a period of twelve (12) months after termination, Employee shall not engage in any business that competes with the Company.
+6.2 This restriction applies within a 50-mile radius of the Company's principal place of business.
+
+SECTION 7. TERMINATION
+7.1 Termination for Cause: Company may terminate this Agreement immediately for cause, including but not limited to:
+    a) Breach of this Agreement
+    b) Misconduct or negligence
+    c) Conviction of a felony
+7.2 Termination without Cause: Either party may terminate without cause with thirty (30) days written notice.
+7.3 Upon termination, Employee shall return all Company property and confidential information.
+
+SECTION 8. SEVERABILITY
+8.1 If any provision of this Agreement is held invalid or unenforceable, the remaining provisions shall remain in full force and effect.
+
+SECTION 9. GOVERNING LAW
+9.1 This Agreement shall be governed by the laws of the State of Delaware.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.
+
+TECHCORP INC.                           EMPLOYEE
+
+_____________________                   _____________________
+Sarah Johnson, CEO                      John Smith
+Date: January 1, 2024                  Date: January 1, 2024
