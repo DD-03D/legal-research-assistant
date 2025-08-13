@@ -32,11 +32,12 @@ class DocumentUtils:
             text = re.sub(r'\s+', ' ', text)
             
             # Remove special characters but preserve legal formatting - properly escaped
-            text = re.sub(r'[^\w\s\.\,\;\:\!\?\(\)\[\]\"\'%\$&\-]', '', text)
+            # Fix: Escape the dash at the end of character class
+            text = re.sub(r'[^\w\s\.\,\;\:\!\?\(\)\[\]\"\'%\$&\\\-]', '', text)
             
-            # Normalize quotes
+            # Normalize quotes - fix character class for quotes
             text = re.sub(r'["""]', '"', text)
-            text = re.sub(r'['']', "'", text)
+            text = re.sub(r"[''']", "'", text)
             
             return text.strip()
         except re.error as e:

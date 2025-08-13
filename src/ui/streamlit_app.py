@@ -256,11 +256,22 @@ class LegalResearchUI:
         # Vector store status
         if hasattr(self, 'ingestion_pipeline') and self.ingestion_pipeline:
             try:
-                status = self.ingestion_pipeline.get_status()
-                st.write(f"**Documents in DB:** {status['total_documents']}")
-                st.write(f"**Collection:** {status['collection_name']}")
-            except:
-                st.write("**Status:** Error retrieving status")
+                # Get collection info from unified pipeline
+                collection_info = self.ingestion_pipeline.get_collection_info()
+                st.write(f"**Vector Store:** {collection_info.get('vector_store_type', 'Unknown')}")
+                st.write(f"**Status:** {collection_info.get('status', 'Unknown')}")
+                
+                doc_count = collection_info.get('document_count', 'Unknown')
+                if doc_count != 'Unknown':
+                    st.write(f"**Documents in DB:** {doc_count}")
+                else:
+                    st.write(f"**Documents in DB:** Unable to retrieve count")
+                    
+                if 'error' in collection_info:
+                    st.error(f"Error: {collection_info['error']}")
+                    
+            except Exception as e:
+                st.write(f"**Status:** Error retrieving status: {e}")
         else:
             st.write("**Status:** Not initialized")
         
@@ -555,7 +566,17 @@ class LegalResearchUI:
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
                 
-                self.response_generator = LegalResponseGenerator()
+                # Use the same vector store from ingestion pipeline
+                if self.ingestion_pipeline and hasattr(self.ingestion_pipeline, 'vector_store'):
+                    from src.retrieval.retriever import LegalDocumentRetriever
+                    retriever = LegalDocumentRetriever(self.ingestion_pipeline.vector_store)
+                    self.response_generator = LegalResponseGenerator(retriever=retriever)
+                    if logger:
+                        logger.info("Response generator initialized with shared vector store")
+                else:
+                    self.response_generator = LegalResponseGenerator()
+                    if logger:
+                        logger.warning("Response generator initialized with new vector store")
             except Exception as e:
                 st.error(f"❌ Failed to initialize response generator: {e}")
                 if logger:

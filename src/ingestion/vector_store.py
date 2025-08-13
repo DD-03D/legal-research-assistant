@@ -17,6 +17,13 @@ try:
     except ImportError:
         pass
     
+    # Apply ChromaDB telemetry fix
+    try:
+        from src.utils.chroma_fix import fix_chroma_telemetry
+        fix_chroma_telemetry()
+    except ImportError:
+        pass
+    
     import chromadb
     from chromadb.config import Settings
     from langchain.text_splitter import RecursiveCharacterTextSplitter

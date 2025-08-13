@@ -284,6 +284,14 @@ class UnifiedDocumentIngestionPipeline:
                 info = self.vector_store.get_collection_info()
                 info['vector_store_type'] = VECTOR_STORE_TYPE
                 return info
+            elif hasattr(self.vector_store, 'get_document_count'):
+                # Try to get document count
+                doc_count = self.vector_store.get_document_count()
+                return {
+                    'vector_store_type': VECTOR_STORE_TYPE,
+                    'status': 'available',
+                    'document_count': doc_count
+                }
             else:
                 return {
                     'vector_store_type': VECTOR_STORE_TYPE,

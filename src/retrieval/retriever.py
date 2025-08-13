@@ -71,11 +71,21 @@ class LegalDocumentRetriever:
                 filter_dict=filter_dict
             )
             
+            if logger:
+                logger.info(f"Vector store returned {len(results)} raw results for query: {query[:50]}...")
+                if results:
+                    logger.info(f"First result similarity score: {results[0].get('similarity_score', 'N/A')}")
+                else:
+                    logger.warning("No results returned from vector store - this may indicate no documents are indexed")
+            
             # Filter by similarity threshold
             filtered_results = [
                 result for result in results 
                 if result['similarity_score'] <= settings.similarity_threshold
             ]
+            
+            if logger:
+                logger.info(f"After similarity filtering ({settings.similarity_threshold}): {len(filtered_results)} results")
             
             # Take top k results
             top_results = filtered_results[:k]
