@@ -107,8 +107,21 @@ class GeminiProvider(EmbeddingProvider, LLMProvider):
         except Exception:
             pass
         
+        # Try GOOGLE_API_KEY as fallback
+        try:
+            import streamlit as st
+            if hasattr(st, 'secrets') and 'GOOGLE_API_KEY' in st.secrets:
+                return st.secrets['GOOGLE_API_KEY']
+        except Exception:
+            pass
+        
         # Try environment variable
         api_key = os.getenv('GEMINI_API_KEY')
+        if api_key:
+            return api_key
+        
+        # Try GOOGLE_API_KEY environment variable as fallback
+        api_key = os.getenv('GOOGLE_API_KEY')
         if api_key:
             return api_key
         

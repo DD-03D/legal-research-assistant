@@ -89,14 +89,33 @@ class LegalResponseGenerator:
                  retriever: Optional[LegalDocumentRetriever] = None,
                  context_builder: Optional[ContextBuilder] = None):
         """Initialize the response generator."""
-        self.retriever = retriever or LegalDocumentRetriever()
-        self.context_builder = context_builder or ContextBuilder()
-        
-        # Initialize language model using API provider factory
-        self.llm = APIProviderFactory.get_llm()
-        
-        # Initialize prompt templates
-        self.templates = LegalPromptTemplates()
+        try:
+            if logger:
+                logger.info("Initializing LegalResponseGenerator")
+            
+            self.retriever = retriever or LegalDocumentRetriever()
+            self.context_builder = context_builder or ContextBuilder()
+            
+            if logger:
+                logger.info("Initializing language model using API provider factory")
+            
+            # Initialize language model using API provider factory
+            self.llm = APIProviderFactory.get_llm()
+            
+            if logger:
+                logger.info(f"LLM initialized successfully: {type(self.llm)}")
+                logger.info(f"LLM model: {getattr(self.llm, 'model_name', 'Unknown')}")
+            
+            # Initialize prompt templates
+            self.templates = LegalPromptTemplates()
+            
+            if logger:
+                logger.info("LegalResponseGenerator initialization completed successfully")
+                
+        except Exception as e:
+            if logger:
+                logger.error(f"Failed to initialize LegalResponseGenerator: {e}")
+            raise
     
     def generate_response(self, 
                          question: str,
@@ -114,26 +133,61 @@ class LegalResponseGenerator:
         try:
             start_time = datetime.now()
             
+            # Debug: Log the question and settings
+            if logger:
+                logger.info(f"Starting response generation for question: {question[:100]}...")
+                logger.info(f"Using API provider: {settings.api_provider}")
+                logger.info(f"LLM model: {settings.llm_model}")
+            
             # Retrieve relevant documents with conflict detection
             if logger:
                 logger.info(f"Retrieving documents for question: {question[:100]}...")
             
-            retrieval_results = self.retriever.retrieve_with_conflict_detection(
-                query=question,
-                k=settings.top_k_retrievals
-            )
+            try:
+                retrieval_results = self.retriever.retrieve_with_conflict_detection(
+                    query=question,
+                    k=settings.top_k_retrievals
+                )
+                if logger:
+                    logger.info(f"Retrieved {len(retrieval_results)} documents")
+            except Exception as retrieval_error:
+                if logger:
+                    logger.error(f"Document retrieval failed: {retrieval_error}")
+                return self._generate_error_response(question, f"Document retrieval failed: {retrieval_error}")
             
             # Build context for generation
-            context_data = self.context_builder.build_context(retrieval_results)
+            try:
+                context_data = self.context_builder.build_context(retrieval_results)
+                if logger:
+                    logger.info(f"Context built successfully, length: {context_data.get('context_length', 0)}")
+            except Exception as context_error:
+                if logger:
+                    logger.error(f"Context building failed: {context_error}")
+                return self._generate_error_response(question, f"Context building failed: {context_error}")
             
             if not context_data['context']:
+                if logger:
+                    logger.warning("No context available, generating no-context response")
                 return self._generate_no_context_response(question)
             
             # Generate response based on whether conflicts exist
-            if context_data['has_conflicts']:
-                response = self._generate_conflict_aware_response(question, context_data)
-            else:
-                response = self._generate_standard_response(question, context_data)
+            try:
+                if context_data['has_conflicts']:
+                    if logger:
+                        logger.info("Generating conflict-aware response")
+                    response = self._generate_conflict_aware_response(question, context_data)
+                else:
+                    if logger:
+                        logger.info("Generating standard response")
+                    response = self._generate_standard_response(question, context_data)
+                
+                if logger:
+                    logger.info(f"Response generated successfully: {response[:200]}...")
+                    
+            except Exception as gen_error:
+                if logger:
+                    logger.error(f"Response generation failed: {gen_error}")
+                return self._generate_error_response(question, f"Response generation failed: {gen_error}")
             
             # Calculate response time
             response_time = (datetime.now() - start_time).total_seconds()
@@ -289,37 +343,77 @@ class LegalResponseGenerator:
     
     def _generate_standard_response(self, question: str, context_data: Dict[str, Any]) -> str:
         """Generate standard response without conflicts."""
-        prompt = self.templates.QUERY_PROMPT.format(
-            context=context_data['context'],
-            question=question,
-            conflict_instructions=""
-        )
-        
-        messages = [
-            SystemMessage(content=self.templates.SYSTEM_PROMPT),
-            HumanMessage(content=prompt)
-        ]
-        
-        response = self.llm(messages)
-        return response.content
+        try:
+            if logger:
+                logger.info("Building prompt for standard response")
+            
+            prompt = self.templates.QUERY_PROMPT.format(
+                context=context_data['context'],
+                question=question,
+                conflict_instructions=""
+            )
+            
+            if logger:
+                logger.info(f"Prompt built successfully, length: {len(prompt)}")
+                logger.info(f"Using LLM: {type(self.llm)}")
+            
+            messages = [
+                SystemMessage(content=self.templates.SYSTEM_PROMPT),
+                HumanMessage(content=prompt)
+            ]
+            
+            if logger:
+                logger.info("Calling LLM with messages")
+            
+            response = self.llm(messages)
+            
+            if logger:
+                logger.info(f"LLM response received: {response.content[:200]}...")
+            
+            return response.content
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Error in standard response generation: {e}")
+            raise
     
     def _generate_conflict_aware_response(self, question: str, context_data: Dict[str, Any]) -> str:
         """Generate response that addresses conflicts."""
-        conflict_instructions = self.templates.CONFLICT_RESOLUTION_PROMPT
-        
-        prompt = self.templates.QUERY_PROMPT.format(
-            context=context_data['context'],
-            question=question,
-            conflict_instructions=conflict_instructions
-        )
-        
-        messages = [
-            SystemMessage(content=self.templates.SYSTEM_PROMPT),
-            HumanMessage(content=prompt)
-        ]
-        
-        response = self.llm(messages)
-        return response.content
+        try:
+            if logger:
+                logger.info("Building prompt for conflict-aware response")
+            
+            conflict_instructions = self.templates.CONFLICT_RESOLUTION_PROMPT
+            
+            prompt = self.templates.QUERY_PROMPT.format(
+                context=context_data['context'],
+                question=question,
+                conflict_instructions=conflict_instructions
+            )
+            
+            if logger:
+                logger.info(f"Prompt built successfully, length: {len(prompt)}")
+                logger.info(f"Using LLM: {type(self.llm)}")
+            
+            messages = [
+                SystemMessage(content=self.templates.SYSTEM_PROMPT),
+                HumanMessage(content=prompt)
+            ]
+            
+            if logger:
+                logger.info("Calling LLM with messages")
+            
+            response = self.llm(messages)
+            
+            if logger:
+                logger.info(f"LLM response received: {response.content[:200]}...")
+            
+            return response.content
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Error in conflict-aware response generation: {e}")
+            raise
     
     def _generate_no_context_response(self, question: str) -> Dict[str, Any]:
         """Generate response when no relevant documents are found."""
