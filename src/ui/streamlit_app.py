@@ -112,10 +112,27 @@ class LegalResearchUI:
     
     def run(self):
         """Run the main UI application."""
-        self.render_header()
-        self.render_sidebar()
-        self.render_main_content()
-        self.render_footer()
+        try:
+            st.write("🔧 Rendering header...")
+            self.render_header()
+            
+            st.write("🔧 Rendering sidebar...")
+            self.render_sidebar()
+            
+            st.write("🔧 Rendering main content...")
+            self.render_main_content()
+            
+            st.write("🔧 Rendering footer...")
+            self.render_footer()
+            
+            st.success("✅ All components rendered successfully!")
+            
+        except Exception as e:
+            st.error(f"❌ Error in run method: {e}")
+            if logger:
+                logger.error(f"Run method error: {e}")
+            import traceback
+            st.code(traceback.format_exc())
     
     def render_header(self):
         """Render the application header."""
@@ -144,42 +161,63 @@ class LegalResearchUI:
     
     def render_sidebar(self):
         """Render the sidebar with controls and settings."""
-        with st.sidebar:
-            st.header("📁 Document Management")
-            
-            # File upload section
-            self.render_file_upload()
-            
-            # Document list
-            self.render_document_list()
-            
-            # Settings section
-            st.header("⚙️ Settings")
-            self.render_settings()
-            
-            # System status
-            st.header("📊 System Status")
-            self.render_system_status()
+        try:
+            with st.sidebar:
+                st.header("📁 Document Management")
+                
+                # Debug: Add status message
+                st.success("✅ Sidebar loaded successfully")
+                
+                # File upload section
+                self.render_file_upload()
+                
+                # Document list
+                self.render_document_list()
+                
+                # Settings section
+                st.header("⚙️ Settings")
+                self.render_settings()
+                
+                # System status
+                st.header("📊 System Status")
+                self.render_system_status()
+                
+        except Exception as e:
+            st.error(f"❌ Error rendering sidebar: {e}")
+            if logger:
+                logger.error(f"Sidebar render error: {e}")
     
     def render_file_upload(self):
         """Render file upload interface."""
-        st.subheader("Upload Legal Documents")
-        
-        uploaded_files = st.file_uploader(
-            "Choose files",
-            type=['pdf', 'docx', 'txt'],
-            accept_multiple_files=True,
-            help="Upload PDF, DOCX, or TXT files containing legal documents"
-        )
-        
-        if uploaded_files:
-            if st.button("Process Documents", type="primary"):
-                self.process_uploaded_files(uploaded_files)
-        
-        # Clear documents button
-        if st.session_state.uploaded_documents:
-            if st.button("Clear All Documents", type="secondary"):
-                self.clear_all_documents()
+        try:
+            st.subheader("Upload Legal Documents")
+            
+            # Debug: Add status message
+            st.info("📁 File upload interface loaded successfully")
+            
+            uploaded_files = st.file_uploader(
+                "Choose files",
+                type=['pdf', 'docx', 'txt'],
+                accept_multiple_files=True,
+                help="Upload PDF, DOCX, or TXT files containing legal documents"
+            )
+            
+            if uploaded_files:
+                st.success(f"✅ {len(uploaded_files)} file(s) selected")
+                if st.button("Process Documents", type="primary"):
+                    self.process_uploaded_files(uploaded_files)
+            else:
+                st.info("👆 Please select files to upload using the file picker above")
+            
+            # Clear documents button
+            if st.session_state.uploaded_documents:
+                if st.button("Clear All Documents", type="secondary"):
+                    self.clear_all_documents()
+                    
+        except Exception as e:
+            st.error(f"❌ Error rendering file upload interface: {e}")
+            if logger:
+                logger.error(f"File upload render error: {e}")
     
     def render_document_list(self):
         """Render list of uploaded documents."""
@@ -786,11 +824,16 @@ class LegalResearchUI:
 def main():
     """Main entry point for the Streamlit app."""
     try:
+        st.write("🚀 Initializing Legal Research Assistant...")
         app = LegalResearchUI()
+        st.write("✅ App initialized successfully")
         app.run()
     except Exception as e:
         st.error(f"Application error: {str(e)}")
+        st.write(f"Debug info: {e}")
         print(f"Application error: {str(e)}")
+        import traceback
+        st.code(traceback.format_exc())
 
 
 if __name__ == "__main__":
