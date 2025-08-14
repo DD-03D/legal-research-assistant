@@ -471,3 +471,23 @@ class DocumentIngestionPipeline:
             'collection_name': self.vector_store.collection_name,
             'persist_directory': self.vector_store.persist_directory
         }
+    
+    def get_collection_info(self) -> Dict[str, Any]:
+        """Get collection information for UI display."""
+        try:
+            doc_count = self.vector_store.get_document_count()
+            return {
+                'document_count': doc_count,
+                'total_documents': doc_count,
+                'vector_store_type': 'ChromaDB',
+                'status': 'Ready' if doc_count > 0 else 'Empty',
+                'collection_name': self.vector_store.collection_name
+            }
+        except Exception as e:
+            return {
+                'document_count': 0,
+                'total_documents': 0,
+                'vector_store_type': 'ChromaDB',
+                'status': 'Error',
+                'error': str(e)
+            }

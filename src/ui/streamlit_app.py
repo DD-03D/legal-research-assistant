@@ -14,19 +14,58 @@ sys.path.append(str(project_root))
 
 # Import our modules
 try:
-    from src.ingestion.document_processor import DocumentIngestionPipeline
-    from src.response_generation.legal_response_generator import LegalResponseGenerator
-    from src.evaluation.performance_evaluator import PerformanceEvaluator
-    from src.utils.logger_config import get_logger
-    from src.config.settings import settings
-    from src.utils.file_utils import validate_file_type, format_file_size
+    from src.ingestion.vector_store import DocumentIngestionPipeline
+    from src.generation.legal_rag import LegalResponseGenerator
+    from src.evaluation.metrics import PerformanceEvaluator
+    try:
+        from config.settings import settings
+    except ImportError:
+        # Create minimal settings fallback
+        class MockSettings:
+            gemini_api_key = ""
+            openai_api_key = ""
+        settings = MockSettings()
+    
+    try:
+        from src.utils import validate_file_type, format_file_size
+    except ImportError:
+        # Create utility fallbacks
+        def validate_file_type(filename):
+            return filename.endswith(('.pdf', '.docx', '.txt'))
+        def format_file_size(size_bytes):
+            return f"{size_bytes/1024:.1f} KB"
 except ImportError as e:
     print(f"Import error: {e}")
     st.error(f"Failed to import required modules: {e}")
+    # Create minimal fallbacks with basic functionality
+    class DocumentIngestionPipeline:
+        def __init__(self, vector_store_manager=None):
+            self.vector_store = None
+        def ingest_file(self, file_path):
+            return {"status": "error", "message": "Service unavailable"}
+        def get_collection_info(self):
+            return {"documents": 0, "status": "unavailable"}
+    
+    class LegalResponseGenerator:
+        def __init__(self, vector_store=None, api_provider=None):
+            pass
+        def generate_response(self, query, **kwargs):
+            return {"response": "Service temporarily unavailable. Please try again later.", "sources": []}
+    
+    class PerformanceEvaluator:
+        def __init__(self):
+            self.performance_logs = []
+        def measure_end_to_end_latency(self, query, response_generator):
+            return {"latency": 0, "status": "unavailable"}
+    
+    def validate_file_type(filename):
+        return filename.endswith(('.pdf', '.docx', '.txt'))
+    def format_file_size(size_bytes):
+        return f"{size_bytes/1024:.1f} KB"
 
 # Get logger
 try:
-    logger = get_logger(__name__)
+    from loguru import logger
 except:
     logger = None
 
@@ -518,21 +557,26 @@ class LegalResearchUI:
                         logger.info(f"Document processing result for {uploaded_file.name}: {result}")
                     
                     # Check if result is a dictionary and has the expected structure
-                    if isinstance(result, dict) and 'document_id' in result:
+                    if isinstance(result, dict) and (result.get('success') or 'document_id' in result):
+                        # Handle both success result format and direct document_id format
+                        doc_id = result.get('document_id') if 'document_id' in result else result.get('filename', uploaded_file.name)
+                        sections_count = result.get('sections_added', result.get('section_count', 0))
+                        tokens_count = result.get('total_tokens', result.get('token_count', 0))
+                        
                         doc_info = {
                             'filename': uploaded_file.name,
                             'file_type': Path(uploaded_file.name).suffix.upper()[1:],
                             'file_size': uploaded_file.size,
-                            'document_id': result.get('document_id', 'unknown'),
-                            'section_count': result.get('section_count', 0),
-                            'token_count': result.get('token_count', 0)
+                            'document_id': doc_id,
+                            'section_count': sections_count,
+                            'token_count': tokens_count
                         }
                         
                         processed_docs.append(doc_info)
                         st.session_state.uploaded_documents.append(doc_info)
                         st.success(f"✅ Successfully processed {uploaded_file.name}")
                     else:
-                        st.error(f"Failed to process {uploaded_file.name}: Invalid result format - {type(result)}")
+                        st.error(f"Failed to process {uploaded_file.name}: Invalid result format - {type(result)} - {result}")
                 
                 finally:
                     # Clean up temporary file
@@ -577,11 +621,16 @@ class LegalResearchUI:
                 
                 # Prefer retriever backed by the shared vector store
                 if self.ingestion_pipeline and hasattr(self.ingestion_pipeline, 'vector_store'):
-                    from src.retrieval.retriever import LegalDocumentRetriever
-                    retriever = LegalDocumentRetriever(self.ingestion_pipeline.vector_store)
-                    self.response_generator = LegalResponseGenerator(retriever=retriever)
-                    if logger:
-                        logger.info("Response generator initialized with shared vector store after upload")
+                    try:
+                        from src.retrieval.retriever import LegalDocumentRetriever
+                        retriever = LegalDocumentRetriever(self.ingestion_pipeline.vector_store)
+                        self.response_generator = LegalResponseGenerator(retriever=retriever)
+                        if logger:
+                            logger.info("Response generator initialized with shared vector store after upload")
+                    except ImportError:
+                        self.response_generator = LegalResponseGenerator()
+                        if logger:
+                            logger.warning("Retriever not available, using response generator without shared vector store")
                 else:
                     self.response_generator = LegalResponseGenerator()
                     if logger:
@@ -638,12 +687,17 @@ class LegalResearchUI:
                 
                 # Use the same vector store from ingestion pipeline
                 if self.ingestion_pipeline and hasattr(self.ingestion_pipeline, 'vector_store'):
-                    from src.retrieval.retriever import LegalDocumentRetriever
-                    retriever = LegalDocumentRetriever(self.ingestion_pipeline.vector_store)
-                    self.response_generator = LegalResponseGenerator(retriever=retriever)
-                    if logger:
-                        logger.info("Response generator initialized with shared vector store")
-                        logger.info(f"Shared vector store ID: {id(self.ingestion_pipeline.vector_store)}")
+                    try:
+                        from src.retrieval.retriever import LegalDocumentRetriever
+                        retriever = LegalDocumentRetriever(self.ingestion_pipeline.vector_store)
+                        self.response_generator = LegalResponseGenerator(retriever=retriever)
+                        if logger:
+                            logger.info("Response generator initialized with shared vector store")
+                            logger.info(f"Shared vector store ID: {id(self.ingestion_pipeline.vector_store)}")
+                    except ImportError:
+                        self.response_generator = LegalResponseGenerator()
+                        if logger:
+                            logger.warning("Retriever not available, using response generator without shared vector store")
                 else:
                     self.response_generator = LegalResponseGenerator()
                     if logger:
