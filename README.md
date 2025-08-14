@@ -7,7 +7,7 @@
 [![LangChain](https://img.shields.io/badge/RAG-LangChain-1C3C3C.svg)](https://langchain.com)
 [![Chroma](https://img.shields.io/badge/VectorDB-Chroma-8B5CF6.svg)](https://trychroma.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Demo](https://img.shields.io/badge/🚀-Live_Demo-success.svg)](http://localhost:8501)
+[![Demo](https://img.shields.io/badge/🚀-Live_Demo-success.svg)](https://legal-research-assistant-007.streamlit.app/)
 
 ---
 
