@@ -64,7 +64,7 @@ class LegalResearchUI:
         self.performance_evaluator = PerformanceEvaluator()
     
     def setup_page_config(self):
-        """Configure Streamlit page settings."""
+        """Configure Streamlit page settings with minimal, modern design."""
         try:
             st.set_page_config(
                 page_title="Legal Research Assistant",
@@ -76,29 +76,263 @@ class LegalResearchUI:
             # Page config might already be set, ignore the error
             pass
         
-        # Enhanced CSS for professional UI
+        # Minimal Material Design CSS
         st.markdown("""
             <style>
-            /* Import Google Fonts */
+            /* Import modern font */
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
             
-            /* Global Styles */
+            /* === GLOBAL FOUNDATION === */
             .main {
                 font-family: 'Inter', sans-serif;
-                color: #1e293b !important;
+                background-color: #fafafa;
+                color: #212121;
             }
             
-            /* Ensure all text is dark by default */
+            /* Clean text defaults */
             body, .main .block-container, p, div, span, h1, h2, h3, h4, h5, h6 {
-                color: #1e293b !important;
+                color: #212121 !important;
+                font-family: 'Inter', sans-serif;
             }
             
-            /* Override any Streamlit default white text */
-            .stMarkdown, .stText, .element-container {
-                color: #1e293b !important;
+            /* Hide Streamlit branding */
+            #MainMenu { visibility: hidden; }
+            footer { visibility: hidden; }
+            header { visibility: hidden; }
+            .css-1rs6os { display: none; }
+            
+            /* Main container spacing */
+            .main .block-container {
+                padding: 2rem 2rem 1rem 2rem;
+                max-width: 1200px;
+                margin: 0 auto;
             }
             
-            /* Hide Streamlit elements */
+            /* === MINIMAL HEADER === */
+            .minimal-header {
+                background: #ffffff;
+                padding: 2rem;
+                border-radius: 12px;
+                margin-bottom: 2rem;
+                border: 1px solid #e0e0e0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                text-align: center;
+            }
+            
+            .minimal-header h1 {
+                color: #1565c0 !important;
+                font-size: 2.2rem;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+                letter-spacing: -0.02em;
+            }
+            
+            .minimal-header p {
+                color: #616161 !important;
+                font-size: 1rem;
+                margin: 0;
+                font-weight: 400;
+            }
+            
+            /* === MATERIAL BUTTONS === */
+            .stButton > button {
+                background: #1976d2;
+                color: white !important;
+                border: none;
+                border-radius: 8px;
+                padding: 0.75rem 2rem;
+                font-weight: 500;
+                font-size: 0.95rem;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 4px rgba(25, 118, 210, 0.2);
+                min-height: 48px;
+            }
+            
+            .stButton > button:hover {
+                background: #1565c0;
+                box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+                transform: translateY(-1px);
+            }
+            
+            .stButton > button:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 4px rgba(25, 118, 210, 0.2);
+            }
+            
+            /* Secondary buttons */
+            .stButton[data-testid*="secondary"] > button {
+                background: #f5f5f5;
+                color: #424242 !important;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            
+            .stButton[data-testid*="secondary"] > button:hover {
+                background: #eeeeee;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            }
+            
+            /* === CLEAN CARDS === */
+            .material-card {
+                background: #ffffff;
+                border-radius: 12px;
+                padding: 1.5rem;
+                margin: 1rem 0;
+                border: 1px solid #e0e0e0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                transition: box-shadow 0.2s ease;
+            }
+            
+            .material-card:hover {
+                box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            }
+            
+            /* === METRIC CARDS === */
+            .metric-minimal {
+                background: #ffffff;
+                padding: 1.5rem;
+                border-radius: 8px;
+                border: 1px solid #e0e0e0;
+                text-align: center;
+                transition: transform 0.2s ease;
+            }
+            
+            .metric-minimal:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            }
+            
+            .metric-value {
+                font-size: 1.8rem;
+                font-weight: 600;
+                color: #1976d2;
+                margin-bottom: 0.25rem;
+            }
+            
+            .metric-label {
+                font-size: 0.85rem;
+                color: #757575;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                font-weight: 500;
+            }
+            
+            /* === CLEAN STATUS INDICATORS === */
+            .status-clean {
+                display: flex;
+                align-items: center;
+                padding: 0.75rem 1rem;
+                border-radius: 8px;
+                font-weight: 500;
+                margin: 0.5rem 0;
+            }
+            
+            .status-success {
+                background: #e8f5e8;
+                color: #2e7d32 !important;
+                border: 1px solid #c8e6c9;
+            }
+            
+            .status-warning {
+                background: #fff3e0;
+                color: #ef6c00 !important;
+                border: 1px solid #ffcc02;
+            }
+            
+            .status-info {
+                background: #e3f2fd;
+                color: #0277bd !important;
+                border: 1px solid #bbdefb;
+            }
+            
+            /* === MODERN FILE UPLOAD === */
+            .stFileUploader > div {
+                border: 2px dashed #bdbdbd;
+                border-radius: 12px;
+                padding: 2rem;
+                background: #fafafa;
+                transition: all 0.2s ease;
+            }
+            
+            .stFileUploader > div:hover {
+                border-color: #1976d2;
+                background: #f3f8ff;
+            }
+            
+            /* === CLEAN INPUTS === */
+            .stTextInput > div > div > input {
+                border-radius: 8px;
+                border: 1px solid #d0d0d0;
+                padding: 0.75rem;
+                font-size: 0.95rem;
+                background: #ffffff;
+                transition: border-color 0.2s ease;
+            }
+            
+            .stTextInput > div > div > input:focus {
+                border-color: #1976d2;
+                box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+            }
+            
+            .stTextArea > div > div > textarea {
+                border-radius: 8px;
+                border: 1px solid #d0d0d0;
+                padding: 0.75rem;
+                font-size: 0.95rem;
+                background: #ffffff;
+                min-height: 120px;
+                transition: border-color 0.2s ease;
+            }
+            
+            .stTextArea > div > div > textarea:focus {
+                border-color: #1976d2;
+                box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+            }
+            
+            /* === SIDEBAR MINIMAL === */
+            .css-1d391kg {
+                background: #ffffff;
+                border-right: 1px solid #e0e0e0;
+            }
+            
+            /* === SECTION HEADERS === */
+            .section-header {
+                color: #424242 !important;
+                font-size: 1.2rem;
+                font-weight: 600;
+                margin: 2rem 0 1rem 0;
+                padding-bottom: 0.5rem;
+                border-bottom: 2px solid #f0f0f0;
+            }
+            
+            /* === CLEAN EXPANDERS === */
+            .streamlit-expanderHeader {
+                background: #fafafa;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                font-weight: 500;
+            }
+            
+            /* === RESPONSIVE === */
+            @media (max-width: 768px) {
+                .main .block-container {
+                    padding: 1rem;
+                }
+                
+                .minimal-header {
+                    padding: 1.5rem;
+                }
+                
+                .minimal-header h1 {
+                    font-size: 1.8rem;
+                }
+                
+                .material-card {
+                    padding: 1rem;
+                    margin: 0.5rem 0;
+                }
+            }
+            </style>
+        """, unsafe_allow_html=True)
             #MainMenu { visibility: hidden; }
             footer { visibility: hidden; }
             header { visibility: hidden; }
@@ -475,25 +709,22 @@ class LegalResearchUI:
             st.code(traceback.format_exc())
     
     def render_header(self):
-        """Render the application header with enhanced styling."""
+        """Render minimal, clean application header."""
         st.markdown("""
-            <div class="main-header fade-in">
+            <div class="minimal-header">
                 <h1>⚖️ Legal Research Assistant</h1>
-                <p>Advanced RAG System for Legal Document Analysis</p>
-                <p style="font-size: 1rem; margin-top: 1rem; opacity: 0.8;">
-                    Upload legal documents and get intelligent answers with proper citations and conflict detection
-                </p>
+                <p>AI-powered legal document analysis with intelligent citations</p>
             </div>
         """, unsafe_allow_html=True)
         
-        # Enhanced status indicators with better styling
+        # Clean metric cards
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             doc_count = len(st.session_state.uploaded_documents)
             st.markdown(f"""
-                <div class="metric-card fade-in">
-                    <div class="metric-value">📄 {doc_count}</div>
+                <div class="metric-minimal">
+                    <div class="metric-value">{doc_count}</div>
                     <div class="metric-label">Documents</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -501,28 +732,27 @@ class LegalResearchUI:
         with col2:
             query_count = len(st.session_state.query_history)
             st.markdown(f"""
-                <div class="metric-card fade-in">
-                    <div class="metric-value">🔍 {query_count}</div>
+                <div class="metric-minimal">
+                    <div class="metric-value">{query_count}</div>
                     <div class="metric-label">Queries</div>
                 </div>
             """, unsafe_allow_html=True)
         
         with col3:
             status = st.session_state.vector_store_status
-            status_color = "🟢" if status == "Ready" else "🟡" if status == "Cleared" else "🔴"
+            status_text = "Ready" if status == "Ready" else "Pending"
             st.markdown(f"""
-                <div class="metric-card fade-in">
-                    <div class="metric-value">{status_color}</div>
-                    <div class="metric-label">Vector Store</div>
+                <div class="metric-minimal">
+                    <div class="metric-value" style="color: {'#2e7d32' if status == 'Ready' else '#ed6c02'};">{status_text}</div>
+                    <div class="metric-label">Status</div>
                 </div>
             """, unsafe_allow_html=True)
         
         with col4:
-            # Calculate total tokens if available
             total_tokens = sum(doc.get('token_count', 0) for doc in st.session_state.uploaded_documents)
             st.markdown(f"""
-                <div class="metric-card fade-in">
-                    <div class="metric-value">🧮 {total_tokens:,}</div>
+                <div class="metric-minimal">
+                    <div class="metric-value">{total_tokens:,}</div>
                     <div class="metric-label">Tokens</div>
                 </div>
             """, unsafe_allow_html=True)
