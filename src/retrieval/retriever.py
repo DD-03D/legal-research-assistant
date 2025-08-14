@@ -102,17 +102,27 @@ class LegalDocumentRetriever:
                 if results:
                     logger.info(f"First result similarity score: {results[0].get('similarity_score', 'N/A')}")
                     logger.info(f"First result content preview: {results[0].get('content', '')[:100]}...")
+                    # Log all similarity scores for debugging
+                    scores = [r.get('similarity_score', 'N/A') for r in results[:5]]
+                    logger.info(f"Top 5 similarity scores: {scores}")
                 else:
                     logger.warning("No results returned from vector store - this may indicate no documents are indexed")
             
-            # Filter by similarity threshold
-            filtered_results = [
-                result for result in results 
-                if result['similarity_score'] <= settings.similarity_threshold
-            ]
+            # TEMPORARILY disable similarity filtering to debug
+            if logger:
+                logger.info(f"DEBUGGING: Skipping similarity threshold filtering (threshold={settings.similarity_threshold})")
+            
+            # Filter by similarity threshold - COMMENTED OUT FOR DEBUGGING
+            # filtered_results = [
+            #     result for result in results 
+            #     if result['similarity_score'] <= settings.similarity_threshold
+            # ]
+            
+            # Use all results for now
+            filtered_results = results
             
             if logger:
-                logger.info(f"After similarity filtering ({settings.similarity_threshold}): {len(filtered_results)} results")
+                logger.info(f"After similarity filtering (DISABLED): {len(filtered_results)} results")
             
             # Take top k results
             top_results = filtered_results[:k]
