@@ -85,6 +85,17 @@ class LegalResearchUI:
             /* Global Styles */
             .main {
                 font-family: 'Inter', sans-serif;
+                color: #1e293b !important;
+            }
+            
+            /* Ensure all text is dark by default */
+            body, .main .block-container, p, div, span, h1, h2, h3, h4, h5, h6 {
+                color: #1e293b !important;
+            }
+            
+            /* Override any Streamlit default white text */
+            .stMarkdown, .stText, .element-container {
+                color: #1e293b !important;
             }
             
             /* Hide Streamlit elements */
@@ -107,7 +118,7 @@ class LegalResearchUI:
                 padding: 2rem;
                 border-radius: 15px;
                 margin-bottom: 2rem;
-                color: white;
+                color: white !important;
                 text-align: center;
                 box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             }
@@ -117,12 +128,18 @@ class LegalResearchUI:
                 font-weight: 700;
                 margin-bottom: 0.5rem;
                 text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                color: white !important;
             }
             
             .main-header p {
                 font-size: 1.2rem;
                 opacity: 0.9;
                 margin-bottom: 0;
+                color: white !important;
+            }
+            
+            .main-header * {
+                color: white !important;
             }
             
             /* Metrics cards */
@@ -188,7 +205,7 @@ class LegalResearchUI:
             /* Buttons */
             .stButton > button {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
+                color: white !important;
                 border: none;
                 border-radius: 8px;
                 padding: 0.6rem 2rem;
@@ -200,12 +217,14 @@ class LegalResearchUI:
             .stButton > button:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                color: white !important;
             }
             
             /* Secondary button */
             .stButton[data-baseweb="button"]:nth-child(2) > button {
                 background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
                 box-shadow: 0 4px 15px rgba(248, 113, 113, 0.3);
+                color: white !important;
             }
             
             /* Sidebar enhancements */
@@ -320,26 +339,38 @@ class LegalResearchUI:
             /* Status indicators */
             .status-success {
                 background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                color: white;
+                color: white !important;
                 padding: 0.8rem 1.5rem;
                 border-radius: 8px;
                 font-weight: 600;
+            }
+            
+            .status-success * {
+                color: white !important;
             }
             
             .status-warning {
                 background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-                color: white;
+                color: white !important;
                 padding: 0.8rem 1.5rem;
                 border-radius: 8px;
                 font-weight: 600;
             }
             
+            .status-warning * {
+                color: white !important;
+            }
+            
             .status-info {
                 background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-                color: white;
+                color: white !important;
                 padding: 0.8rem 1.5rem;
                 border-radius: 8px;
                 font-weight: 600;
+            }
+            
+            .status-info * {
+                color: white !important;
             }
             
             /* Sidebar styling */
@@ -426,60 +457,15 @@ class LegalResearchUI:
     def run(self):
         """Run the main UI application."""
         try:
-            st.write("🔧 Rendering header...")
             self.render_header()
             
-            st.write("🔧 Rendering sidebar...")
+            # Clean sidebar implementation
+            self.render_sidebar()
             
-            # AGGRESSIVE sidebar forcing - try multiple approaches
-            try:
-                # Method 1: Simple sidebar test
-                st.sidebar.write("🚨 SIDEBAR TEST 1")
-                st.sidebar.header("📁 Document Management - TEST")
-                
-                # Method 2: Force sidebar with file uploader directly
-                st.sidebar.subheader("Upload Legal Documents")
-                sidebar_files = st.sidebar.file_uploader(
-                    "Choose files (Sidebar)",
-                    type=['pdf', 'docx', 'txt'],
-                    accept_multiple_files=True,
-                    help="Upload PDF, DOCX, or TXT files",
-                    key="sidebar_uploader"
-                )
-                
-                if sidebar_files:
-                    st.sidebar.success(f"✅ {len(sidebar_files)} file(s) selected in sidebar")
-                    if st.sidebar.button("Process Documents (Sidebar)", type="primary"):
-                        self.process_uploaded_files(sidebar_files)
-                
-                # Method 3: Try the normal sidebar rendering
-                self.render_sidebar()
-                
-            except Exception as sidebar_error:
-                st.error(f"Sidebar error: {sidebar_error}")
-                # FALLBACK: Put upload in main content if sidebar fails
-                st.warning("⚠️ Sidebar failed - using main content for file upload")
-                st.header("📁 Document Upload (Main Content)")
-                main_files = st.file_uploader(
-                    "Choose files (Main Content)",
-                    type=['pdf', 'docx', 'txt'],
-                    accept_multiple_files=True,
-                    help="Upload PDF, DOCX, or TXT files",
-                    key="main_uploader"
-                )
-                
-                if main_files:
-                    st.success(f"✅ {len(main_files)} file(s) selected")
-                    if st.button("Process Documents (Main)", type="primary"):
-                        self.process_uploaded_files(main_files)
-            
-            st.write("🔧 Rendering main content...")
+            # Main content with fallback upload for reliability
             self.render_main_content()
             
-            st.write("🔧 Rendering footer...")
             self.render_footer()
-            
-            st.success("✅ All components rendered successfully!")
             
         except Exception as e:
             st.error(f"❌ Error in run method: {e}")
@@ -1501,9 +1487,7 @@ class LegalResearchUI:
 def main():
     """Main entry point for the Streamlit app."""
     try:
-        st.write("🚀 Initializing Legal Research Assistant...")
         app = LegalResearchUI()
-        st.write("✅ App initialized successfully")
         app.run()
     except Exception as e:
         st.error(f"Application error: {str(e)}")
