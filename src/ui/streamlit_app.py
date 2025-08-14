@@ -322,6 +322,10 @@ class LegalResearchUI:
             st.session_state.current_response = None
         if 'vector_store_status' not in st.session_state:
             st.session_state.vector_store_status = "Empty"
+        if 'documents_just_processed' not in st.session_state:
+            st.session_state.documents_just_processed = False
+        if 'show_query_hint' not in st.session_state:
+            st.session_state.show_query_hint = False
     
     def render_header(self):
         """Render the minimal header."""
@@ -358,8 +362,10 @@ class LegalResearchUI:
             )
             
             if uploaded_files:
-                if st.button("📤 Process Documents", use_container_width=True):
-                    self.process_uploaded_files(uploaded_files)
+                if st.button("📤 Process Documents", use_container_width=True, type="primary"):
+                    with st.spinner("Processing documents..."):
+                        self.process_uploaded_files(uploaded_files)
+                        st.rerun()  # Immediately rerun to show the updated UI with focus
             
             # Document list
             if st.session_state.uploaded_documents:
@@ -390,12 +396,56 @@ class LegalResearchUI:
             st.markdown('</div>', unsafe_allow_html=True)
             return
         
+        # UX Improvement: Show encouraging message after document processing
+        if st.session_state.get('show_query_hint', False):
+            st.success("🎉 Documents processed successfully! You can now ask legal questions below.")
+            # Add a subtle animation or highlight to draw attention
+            st.markdown("""
+            <style>
+            .stTextArea > div > div > textarea {
+                border: 2px solid #00c851 !important;
+                box-shadow: 0 0 10px rgba(0, 200, 81, 0.3) !important;
+                animation: glow 1.5s ease-in-out;
+            }
+            @keyframes glow {
+                0% { box-shadow: 0 0 5px rgba(0, 200, 81, 0.5); }
+                50% { box-shadow: 0 0 20px rgba(0, 200, 81, 0.8); }
+                100% { box-shadow: 0 0 5px rgba(0, 200, 81, 0.5); }
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            # Clear the hint after showing it once
+            st.session_state.show_query_hint = False
+        
+        # Query input with improved UX
+        placeholder_text = "What are the key provisions regarding contract termination?"
+        if st.session_state.get('documents_just_processed', False):
+            placeholder_text = "Great! Now ask your legal question about the uploaded documents..."
+            # Clear the flag after first render
+            st.session_state.documents_just_processed = False
+        
         # Query input
         query = st.text_area(
             "Legal Question",
-            placeholder="What are the key provisions regarding contract termination?",
-            help="Ask specific legal questions about your uploaded documents"
+            placeholder=placeholder_text,
+            help="Ask specific legal questions about your uploaded documents",
+            key="legal_question_input"
         )
+        
+        # UX Improvement: Auto-focus on query input after document processing
+        if st.session_state.get('documents_just_processed', False):
+            st.markdown("""
+            <script>
+            // Auto-focus on the query input field
+            setTimeout(function() {
+                const textarea = window.parent.document.querySelector('textarea[aria-label="Legal Question"]');
+                if (textarea) {
+                    textarea.focus();
+                    textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 500);
+            </script>
+            """, unsafe_allow_html=True)
         
         col1, col2 = st.columns([2, 1])
         
@@ -412,8 +462,11 @@ class LegalResearchUI:
         with col2:
             include_citations = st.checkbox("Include Citations", value=True)
         
-        # Submit button
-        if st.button("🔍 Analyze", use_container_width=True, disabled=not query.strip()):
+        # Submit button with dynamic text
+        button_text = "🔍 Get Legal Analysis" if query.strip() else "🔍 Analyze"
+        button_type = "primary" if query.strip() else "secondary"
+        
+        if st.button(button_text, use_container_width=True, disabled=not query.strip(), type=button_type):
             if query.strip():
                 self.process_query(query.strip(), selected_types, include_citations)
         
@@ -666,6 +719,10 @@ class LegalResearchUI:
             st.session_state.vector_store_status = "Ready"
             # Ensure pipeline is persisted after successful processing
             st.session_state.ingestion_pipeline = self.ingestion_pipeline
+            
+            # UX Improvement: Set flag to auto-focus on query input after processing
+            st.session_state.documents_just_processed = True
+            st.session_state.show_query_hint = True
         
         # Initialize response generator if not already done
         if not self.response_generator:
