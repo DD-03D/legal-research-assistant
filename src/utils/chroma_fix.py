@@ -12,6 +12,8 @@ os.environ["ANONYMIZED_TELEMETRY"] = "False"
 os.environ["CHROMA_ANONYMIZED_TELEMETRY"] = "False"
 os.environ["CHROMA_TELEMETRY_ENABLED"] = "0"
 os.environ["CHROMA_SERVER_NOFILE"] = os.environ.get("CHROMA_SERVER_NOFILE", "1024")
+os.environ["CHROMA_TELEMETRY_HOST"] = ""
+os.environ["CHROMA_TELEMETRY_PORT"] = ""
 
 def fix_chroma_telemetry():
     """Fix ChromaDB telemetry issues in deployment environments."""
@@ -21,10 +23,25 @@ def fix_chroma_telemetry():
         os.environ["CHROMA_ANONYMIZED_TELEMETRY"] = "False"
         os.environ["CHROMA_TELEMETRY_ENABLED"] = "0"
         os.environ["CHROMA_SERVER_HTTP_PORT"] = "8000"
+        os.environ["CHROMA_TELEMETRY_HOST"] = ""
+        os.environ["CHROMA_TELEMETRY_PORT"] = ""
 
         # Suppress telemetry warnings
         warnings.filterwarnings("ignore", message=".*telemetry.*")
         warnings.filterwarnings("ignore", message=".*capture.*")
+        warnings.filterwarnings("ignore", message=".*ClientStartEvent.*")
+        warnings.filterwarnings("ignore", message=".*ClientCreateCollectionEvent.*")
+        warnings.filterwarnings("ignore", message=".*CollectionQueryEvent.*")
+
+        # Monkey patch the telemetry capture method if it exists
+        try:
+            import chromadb
+            if hasattr(chromadb, 'telemetry'):
+                # Disable telemetry completely
+                chromadb.telemetry = None
+                logger.info("✅ ChromaDB telemetry module disabled")
+        except Exception:
+            pass
 
         logger.info("✅ ChromaDB telemetry disabled")
         return True
@@ -38,6 +55,7 @@ def fix_chroma_import():
     try:
         # Set environment variables before importing ChromaDB
         os.environ["ANONYMIZED_TELEMETRY"] = "False"
+        os.environ["CHROMA_TELEMETRY_ENABLED"] = "0"
         
         # Try to import and configure ChromaDB
         import chromadb
@@ -49,6 +67,15 @@ def fix_chroma_import():
             allow_reset=True,
             is_persistent=True
         )
+        
+        # Disable telemetry at the client level
+        if hasattr(chromadb, 'Client'):
+            # Monkey patch the Client class to disable telemetry
+            original_init = chromadb.Client.__init__
+            def patched_init(self, *args, **kwargs):
+                kwargs['anonymized_telemetry'] = False
+                return original_init(self, *args, **kwargs)
+            chromadb.Client.__init__ = patched_init
         
         logger.info("✅ ChromaDB configured successfully")
         return True
@@ -91,5 +118,27 @@ def reset_chroma_client():
         logger.warning(f"Could not reset ChromaDB client: {e}")
         return False
 
+def disable_chroma_telemetry_completely():
+    """Completely disable ChromaDB telemetry by patching the capture method."""
+    try:
+        import chromadb
+        if hasattr(chromadb, 'telemetry') and chromadb.telemetry:
+            # Create a dummy capture method that does nothing
+            def dummy_capture(*args, **kwargs):
+                pass
+            
+            # Replace the capture method
+            if hasattr(chromadb.telemetry, 'capture'):
+                chromadb.telemetry.capture = dummy_capture
+                logger.info("✅ ChromaDB telemetry capture method patched")
+            
+            # Disable the entire telemetry module
+            chromadb.telemetry = None
+            logger.info("✅ ChromaDB telemetry module completely disabled")
+            
+    except Exception as e:
+        logger.warning(f"Could not patch ChromaDB telemetry: {e}")
+
 # Apply fixes on import
 fix_chroma_telemetry()
+disable_chroma_telemetry_completely()

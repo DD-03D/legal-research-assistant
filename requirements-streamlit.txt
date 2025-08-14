@@ -1,18 +1,17 @@
-# Core Framework Dependencies
+# Streamlit Cloud Deployment Requirements
+# Optimized versions for Python 3.13 and Streamlit Cloud
+
+# Core Framework
+streamlit>=1.28.0
 langchain>=0.1.0
 langchain-openai>=0.0.5
 langchain-google-genai>=2.0.0
 langchain-community>=0.0.10
 langchain-chroma>=0.1.0
-streamlit>=1.28.0
 
-# Note: Python 3.13 has built-in SQLite support
-
-# Vector Database
+# Vector Database - Fixed versions
 chromadb>=0.4.22
 sentence-transformers>=2.2.2
-
-# Alternative Vector Store (FAISS fallback)
 faiss-cpu>=1.7.4
 
 # Document Processing
@@ -46,3 +45,5 @@ loguru>=0.7.0
 
 # UI/UX
 plotly>=5.15.0
+
+# Note: Python 3.13 has built-in SQLite support, no need for pysqlite3-binary
