@@ -37,9 +37,11 @@
 
 ### 3. **Environment Variables (Secrets)**
 - [ ] Add `OPENAI_API_KEY` with your OpenAI API key
-- [ ] Add `GOOGLE_API_KEY` with your Google Gemini API key
+- [ ] Add `GOOGLE_API_KEY` with your Google Gemini API key (or `GEMINI_API_KEY`)
 - [ ] Add `ANONYMIZED_TELEMETRY` = `False`
 - [ ] Add `CHROMA_TELEMETRY_ENABLED` = `0`
+
+**Note**: The app will automatically use `GOOGLE_API_KEY` if `GEMINI_API_KEY` is not set.
 
 ### 4. **Deploy**
 - [ ] Click "Deploy"
@@ -48,6 +50,11 @@
 - [ ] Test basic functionality
 
 ## 🔧 **Troubleshooting Common Issues**
+
+### **API Key Issues**
+- **Problem**: "Gemini API key is required" error
+- **Solution**: Set either `GOOGLE_API_KEY` or `GEMINI_API_KEY` in Streamlit secrets
+- **Check**: Verify the API key is correctly set in Streamlit Cloud secrets
 
 ### **Import Errors**
 - **Problem**: Module not found errors
@@ -79,6 +86,7 @@ After successful deployment, you should see:
 ✅ Main application imported successfully
 ✅ ChromaDB telemetry disabled
 ✅ Fallback vector store initialized with FAISS (if ChromaDB fails)
+✅ API keys loaded successfully
 ```
 
 ## 🎉 **Success Indicators**
@@ -88,6 +96,7 @@ After successful deployment, you should see:
 - ✅ Document upload works
 - ✅ Legal question answering works
 - ✅ Vector store operations successful
+- ✅ API keys are properly loaded
 
 ## 📞 **If Issues Persist**
 

@@ -30,6 +30,20 @@ def get_api_key_from_sources(key_name: str) -> str:
     # 3. Return empty string if not found
     return ""
 
+def get_gemini_api_key() -> str:
+    """Get Gemini API key from multiple sources with fallback to GOOGLE_API_KEY."""
+    # Try GEMINI_API_KEY first
+    gemini_key = get_api_key_from_sources("GEMINI_API_KEY")
+    if gemini_key:
+        return gemini_key
+    
+    # Fallback to GOOGLE_API_KEY
+    google_key = get_api_key_from_sources("GOOGLE_API_KEY")
+    if google_key:
+        return google_key
+    
+    return ""
+
 class Settings(BaseSettings):
     """Application settings and configuration."""
     
@@ -43,7 +57,7 @@ class Settings(BaseSettings):
     
     # API Keys - with dynamic loading
     openai_api_key: str = Field(default_factory=lambda: get_api_key_from_sources("OPENAI_API_KEY"))
-    gemini_api_key: str = Field(default_factory=lambda: get_api_key_from_sources("GEMINI_API_KEY"))
+    gemini_api_key: str = Field(default_factory=get_gemini_api_key)
     huggingface_api_token: Optional[str] = Field(default=None, env="HUGGINGFACE_API_TOKEN")
     pinecone_api_key: Optional[str] = Field(default=None, env="PINECONE_API_KEY")
     
