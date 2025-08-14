@@ -442,6 +442,12 @@ class LegalResearchUI:
     
     def process_uploaded_files(self, uploaded_files):
         """Process uploaded files and add to vector store."""
+        # Always check session state first to avoid recreating pipeline
+        if 'ingestion_pipeline' in st.session_state and st.session_state.ingestion_pipeline is not None:
+            self.ingestion_pipeline = st.session_state.ingestion_pipeline
+            if logger:
+                logger.info("Reusing existing ingestion pipeline from session state")
+        
         # Initialize ingestion pipeline with error handling
         if not self.ingestion_pipeline:
             try:
@@ -458,8 +464,11 @@ class LegalResearchUI:
                 
                 self.ingestion_pipeline = DocumentIngestionPipeline()
                 st.success("✅ Document processing pipeline initialized")
-                # Persist pipeline for reuse across reruns
+                # Persist pipeline for reuse across reruns IMMEDIATELY
                 st.session_state.ingestion_pipeline = self.ingestion_pipeline
+                if logger:
+                    logger.info(f"Created new ingestion pipeline and stored in session state")
+                    logger.info(f"Pipeline vector store ID: {id(self.ingestion_pipeline.vector_store)}")
             except Exception as e:
                 st.error(f"❌ Failed to initialize document processing pipeline: {e}")
                 if logger:
@@ -582,6 +591,32 @@ class LegalResearchUI:
     
     def process_query(self, query: str, document_filter: List[str], include_citations: bool):
         """Process a user query and generate response."""
+        # Always check session state first to avoid recreating components
+        if 'ingestion_pipeline' in st.session_state and st.session_state.ingestion_pipeline is not None:
+            self.ingestion_pipeline = st.session_state.ingestion_pipeline
+            if logger:
+                logger.info("Reusing ingestion pipeline from session state for query")
+        
+        if 'response_generator' in st.session_state and st.session_state.response_generator is not None:
+            self.response_generator = st.session_state.response_generator
+            if logger:
+                logger.info("Reusing response generator from session state")
+        
+        # Debug: Log current state
+        if logger:
+            logger.info(f"=== Starting query processing for: {query[:50]}... ===")
+            logger.info(f"Ingestion pipeline exists: {self.ingestion_pipeline is not None}")
+            logger.info(f"Response generator exists: {self.response_generator is not None}")
+            
+            if self.ingestion_pipeline:
+                try:
+                    collection_info = self.ingestion_pipeline.get_collection_info()
+                    logger.info(f"Vector store document count: {collection_info.get('document_count', 'unknown')}")
+                    logger.info(f"Vector store type: {collection_info.get('vector_store_type', 'unknown')}")
+                    logger.info(f"Pipeline vector store ID: {id(self.ingestion_pipeline.vector_store)}")
+                except Exception as e:
+                    logger.error(f"Failed to get collection info: {e}")
+        
         # Initialize response generator with event loop handling
         if not self.response_generator:
             try:
@@ -603,17 +638,35 @@ class LegalResearchUI:
                     self.response_generator = LegalResponseGenerator(retriever=retriever)
                     if logger:
                         logger.info("Response generator initialized with shared vector store")
+                        logger.info(f"Shared vector store ID: {id(self.ingestion_pipeline.vector_store)}")
                 else:
                     self.response_generator = LegalResponseGenerator()
                     if logger:
                         logger.warning("Response generator initialized with new vector store")
-                # Persist generator for reuse across reruns
+                # Persist generator for reuse across reruns IMMEDIATELY
                 st.session_state.response_generator = self.response_generator
+                if logger:
+                    logger.info("Stored response generator in session state")
             except Exception as e:
                 st.error(f"❌ Failed to initialize response generator: {e}")
                 if logger:
                     logger.error(f"Response generator initialization error: {e}")
                 return
+        else:
+            # Debug: Log existing generator info
+            if logger:
+                logger.info("Using existing response generator")
+                if hasattr(self.response_generator, 'retriever') and hasattr(self.response_generator.retriever, 'vector_store'):
+                    logger.info(f"Generator vector store ID: {id(self.response_generator.retriever.vector_store)}")
+                    # Try to get document count from the retriever's vector store
+                    try:
+                        if hasattr(self.response_generator.retriever.vector_store, 'get_document_count'):
+                            doc_count = self.response_generator.retriever.vector_store.get_document_count()
+                            logger.info(f"Generator's vector store document count: {doc_count}")
+                        else:
+                            logger.info("Generator's vector store doesn't have get_document_count method")
+                    except Exception as e:
+                        logger.error(f"Failed to get document count from generator's vector store: {e}")
         
         try:
             # Show processing indicator

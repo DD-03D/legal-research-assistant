@@ -58,11 +58,37 @@ class LegalDocumentRetriever:
         try:
             k = k or settings.top_k_retrievals
             
+            # Debug: Log vector store status
+            if logger:
+                logger.info(f"=== Retrieval Debug Info ===")
+                logger.info(f"Vector store instance ID: {id(self.vector_store)}")
+                logger.info(f"Query: {query}")
+                logger.info(f"Requested k: {k}")
+                
+                # Try to get document count
+                try:
+                    if hasattr(self.vector_store, 'get_document_count'):
+                        doc_count = self.vector_store.get_document_count()
+                        logger.info(f"Vector store document count: {doc_count}")
+                    else:
+                        logger.warning("Vector store doesn't have get_document_count method")
+                        
+                    # Try to get collection info if available
+                    if hasattr(self.vector_store, 'get_collection_info'):
+                        collection_info = self.vector_store.get_collection_info()
+                        logger.info(f"Collection info: {collection_info}")
+                except Exception as e:
+                    logger.error(f"Failed to get vector store info: {e}")
+            
             # Build filter dictionary
             filter_dict = self._build_filter_dict(document_types, date_range)
             
             # Enhance query for better legal document retrieval
             enhanced_query = self._enhance_legal_query(query)
+            
+            if logger:
+                logger.info(f"Enhanced query: {enhanced_query}")
+                logger.info(f"Filter dict: {filter_dict}")
             
             # Retrieve documents
             results = self.vector_store.search_similar_documents(
@@ -75,6 +101,7 @@ class LegalDocumentRetriever:
                 logger.info(f"Vector store returned {len(results)} raw results for query: {query[:50]}...")
                 if results:
                     logger.info(f"First result similarity score: {results[0].get('similarity_score', 'N/A')}")
+                    logger.info(f"First result content preview: {results[0].get('content', '')[:100]}...")
                 else:
                     logger.warning("No results returned from vector store - this may indicate no documents are indexed")
             
