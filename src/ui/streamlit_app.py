@@ -424,6 +424,20 @@ class LegalResearchUI:
         if st.session_state.current_response:
             response = st.session_state.current_response
             
+            # Validate response structure
+            if not isinstance(response, dict):
+                st.error(f"Invalid response format: {type(response)}")
+                return
+            
+            # Ensure response has minimal required fields
+            if 'answer' not in response:
+                st.warning("Response is missing answer content")
+                response['answer'] = "Unable to generate answer"
+            
+            # Ensure sources is a list
+            if 'sources' in response and not isinstance(response['sources'], list):
+                response['sources'] = []
+            
             st.markdown('<div class="material-card">', unsafe_allow_html=True)
             st.markdown('<div class="section-header">📋 Analysis Result</div>', unsafe_allow_html=True)
             
@@ -477,8 +491,19 @@ class LegalResearchUI:
             # Citations
             if response.get('citations'):
                 with st.expander("📎 Citations", expanded=False):
-                    for citation in response['citations']:
-                        st.markdown(f"• {citation}")
+                    citations = response['citations']
+                    if isinstance(citations, list):
+                        for citation in citations:
+                            # Handle both string and dict citations
+                            if isinstance(citation, str):
+                                st.markdown(f"• {citation}")
+                            elif isinstance(citation, dict):
+                                citation_text = citation.get('text', str(citation))
+                                st.markdown(f"• {citation_text}")
+                            else:
+                                st.markdown(f"• {str(citation)}")
+                    else:
+                        st.markdown(f"• {str(citations)}")
             
             # Download option
             self.download_response(response)
