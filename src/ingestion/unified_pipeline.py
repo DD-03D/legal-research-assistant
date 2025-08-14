@@ -206,6 +206,46 @@ class UnifiedDocumentIngestionPipeline:
             logger.error(f"Failed to get vector store info: {e}")
             return {'error': str(e)}
 
+    def get_collection_info(self) -> Dict[str, Any]:
+        """Get collection information for UI display."""
+        try:
+            if hasattr(self.vector_store, 'get_collection_stats'):
+                stats = self.vector_store.get_collection_stats()
+                return {
+                    'vector_store_type': VECTOR_STORE_TYPE,
+                    'status': 'Ready',
+                    'document_count': stats.get('total_documents', 'Unknown'),
+                    'store_type': stats.get('store_type', VECTOR_STORE_TYPE),
+                    'persist_directory': self.persist_directory
+                }
+            elif hasattr(self.vector_store, 'get_document_count'):
+                doc_count = self.vector_store.get_document_count()
+                return {
+                    'vector_store_type': VECTOR_STORE_TYPE,
+                    'status': 'Ready',
+                    'document_count': doc_count,
+                    'store_type': VECTOR_STORE_TYPE,
+                    'persist_directory': self.persist_directory
+                }
+            else:
+                # Fallback information
+                return {
+                    'vector_store_type': VECTOR_STORE_TYPE,
+                    'status': 'Ready',
+                    'document_count': 'Unknown',
+                    'store_type': VECTOR_STORE_TYPE,
+                    'persist_directory': self.persist_directory
+                }
+        except Exception as e:
+            logger.error(f"Failed to get collection info: {e}")
+            return {
+                'vector_store_type': VECTOR_STORE_TYPE,
+                'status': 'Error',
+                'document_count': 'Unknown',
+                'error': str(e),
+                'persist_directory': self.persist_directory
+            }
+
 
 # Maintain backward compatibility
 DocumentIngestionPipeline = UnifiedDocumentIngestionPipeline

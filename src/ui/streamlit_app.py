@@ -621,11 +621,31 @@ class LegalResearchUI:
                 # Measure performance
                 start_time = time.time()
 
-                # Generate response
-                response = self.response_generator.generate_response(
-                    question=query,
-                    document_filters={'document_type': document_filter} if document_filter else None
-                )
+                # Generate response with better error handling
+                try:
+                    response = self.response_generator.generate_response(
+                        question=query,
+                        document_filters={'document_type': document_filter} if document_filter else None
+                    )
+                    
+                    # Debug: Log the response
+                    if logger:
+                        logger.info(f"Generated response: {response}")
+                    
+                    # Validate response structure
+                    if not isinstance(response, dict):
+                        st.error(f"Invalid response format: {type(response)}")
+                        return
+                    
+                    if 'answer' not in response:
+                        st.error(f"Response missing answer: {response}")
+                        return
+                    
+                except Exception as gen_error:
+                    st.error(f"Error generating response: {gen_error}")
+                    if logger:
+                        logger.error(f"Response generation error: {gen_error}")
+                    return
 
                 # Store response immediately so we always render something
                 st.session_state.current_response = response
@@ -663,6 +683,8 @@ class LegalResearchUI:
         
         except Exception as e:
             st.error(f"Error processing query: {str(e)}")
+            if logger:
+                logger.error(f"Query processing error: {e}")
     
     def clear_all_documents(self):
         """Clear all uploaded documents."""
