@@ -98,15 +98,19 @@ class VectorStoreManager:
                 except:
                     pass
                 
+                # Create ChromaDB settings optimized for client mode
+                client_settings = Settings(
+                    anonymized_telemetry=False,
+                    is_persistent=True,
+                    allow_reset=True,
+                    # Don't set server-specific options in client mode
+                )
+                
                 self._vectorstore = Chroma(
                     collection_name=self.collection_name,
                     embedding_function=self.embeddings,
                     persist_directory=self.persist_directory,
-                    client_settings=Settings(
-                        anonymized_telemetry=False,
-                        is_persistent=True,
-                        allow_reset=True
-                    )
+                    client_settings=client_settings
                 )
             except Exception as e:
                 if "already exists" in str(e).lower():
@@ -123,11 +127,7 @@ class VectorStoreManager:
                             collection_name=self.collection_name,
                             embedding_function=self.embeddings,
                             persist_directory=unique_dir,
-                            client_settings=Settings(
-                                anonymized_telemetry=False,
-                                is_persistent=True,
-                                allow_reset=True
-                            )
+                            client_settings=client_settings
                         )
                         if logger:
                             logger.info(f"Created ChromaDB with unique directory: {unique_dir}")

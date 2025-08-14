@@ -14,6 +14,17 @@ os.environ["CHROMA_TELEMETRY_ENABLED"] = "0"
 os.environ["CHROMA_TELEMETRY_HOST"] = ""
 os.environ["CHROMA_TELEMETRY_PORT"] = ""
 
+# Force ChromaDB into client mode to avoid server configuration warnings
+os.environ["CHROMA_SERVER_MODE"] = "false"
+os.environ["CHROMA_CLIENT_MODE"] = "true"
+
+# Suppress ChromaDB warnings about server configuration
+import warnings
+warnings.filterwarnings("ignore", message=".*chroma_server_nofile.*")
+warnings.filterwarnings("ignore", message=".*CHROMA_SERVER_NOFILE.*")
+warnings.filterwarnings("ignore", message=".*soft limit.*")
+warnings.filterwarnings("ignore", message=".*will not be set.*")
+
 # Add project root to Python path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))

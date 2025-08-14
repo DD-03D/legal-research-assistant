@@ -12,9 +12,21 @@ from loguru import logger
 os.environ["ANONYMIZED_TELEMETRY"] = "False"
 os.environ["CHROMA_ANONYMIZED_TELEMETRY"] = "False"
 os.environ["CHROMA_TELEMETRY_ENABLED"] = "0"
-os.environ["CHROMA_SERVER_NOFILE"] = os.environ.get("CHROMA_SERVER_NOFILE", "1024")
 os.environ["CHROMA_TELEMETRY_HOST"] = ""
 os.environ["CHROMA_TELEMETRY_PORT"] = ""
+
+# Force ChromaDB into client mode to avoid server configuration warnings
+os.environ["CHROMA_SERVER_MODE"] = "false"
+os.environ["CHROMA_CLIENT_MODE"] = "true"
+
+# Fix CHROMA_SERVER_NOFILE issue - only set if not already set and in server mode
+if "CHROMA_SERVER_NOFILE" not in os.environ:
+    # Only set this for server mode, not client mode
+    if os.environ.get("CHROMA_SERVER_MODE", "").lower() == "true":
+        os.environ["CHROMA_SERVER_NOFILE"] = "1048576"  # Use a higher value
+    else:
+        # For client mode, don't set this variable to avoid warnings
+        pass
 
 def check_sqlite_version():
     """Check SQLite version and provide compatibility info."""
@@ -57,7 +69,6 @@ def fix_chroma_telemetry():
         os.environ["ANONYMIZED_TELEMETRY"] = "False"
         os.environ["CHROMA_ANONYMIZED_TELEMETRY"] = "False"
         os.environ["CHROMA_TELEMETRY_ENABLED"] = "0"
-        os.environ["CHROMA_SERVER_HTTP_PORT"] = "8000"
         os.environ["CHROMA_TELEMETRY_HOST"] = ""
         os.environ["CHROMA_TELEMETRY_PORT"] = ""
 
@@ -67,6 +78,7 @@ def fix_chroma_telemetry():
         warnings.filterwarnings("ignore", message=".*ClientStartEvent.*")
         warnings.filterwarnings("ignore", message=".*ClientCreateCollectionEvent.*")
         warnings.filterwarnings("ignore", message=".*CollectionQueryEvent.*")
+        warnings.filterwarnings("ignore", message=".*chroma_server_nofile.*")
 
         # Check SQLite compatibility first
         sqlite_ok = check_sqlite_version()
