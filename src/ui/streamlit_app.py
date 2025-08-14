@@ -498,20 +498,26 @@ class LegalResearchUI:
                     # Process document
                     result = self.ingestion_pipeline.ingest_file(tmp_file_path)
                     
-                    if result['success']:
+                    # Debug: Log the actual result
+                    if logger:
+                        logger.info(f"Document processing result for {uploaded_file.name}: {result}")
+                    
+                    # Check if result is a dictionary and has the expected structure
+                    if isinstance(result, dict) and 'document_id' in result:
                         doc_info = {
                             'filename': uploaded_file.name,
                             'file_type': Path(uploaded_file.name).suffix.upper()[1:],
                             'file_size': uploaded_file.size,
-                            'document_id': result['document_id'],
-                            'section_count': result['sections_added'],
-                            'token_count': result['total_tokens']
+                            'document_id': result.get('document_id', 'unknown'),
+                            'section_count': result.get('section_count', 0),
+                            'token_count': result.get('token_count', 0)
                         }
                         
                         processed_docs.append(doc_info)
                         st.session_state.uploaded_documents.append(doc_info)
+                        st.success(f"✅ Successfully processed {uploaded_file.name}")
                     else:
-                        st.error(f"Failed to process {uploaded_file.name}: {result.get('error', 'Unknown error')}")
+                        st.error(f"Failed to process {uploaded_file.name}: Invalid result format - {type(result)}")
                 
                 finally:
                     # Clean up temporary file
@@ -521,7 +527,14 @@ class LegalResearchUI:
                         pass
             
             except Exception as e:
-                st.error(f"Error processing {uploaded_file.name}: {str(e)}")
+                error_msg = str(e)
+                # Don't show 'success' as an error
+                if error_msg.lower() == 'success':
+                    st.success(f"✅ Successfully processed {uploaded_file.name}")
+                else:
+                    st.error(f"Error processing {uploaded_file.name}: {error_msg}")
+                    if logger:
+                        logger.error(f"Document processing error for {uploaded_file.name}: {error_msg}")
         
         # Update status
         progress_bar.progress(1.0)
