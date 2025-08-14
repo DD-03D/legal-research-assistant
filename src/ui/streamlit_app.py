@@ -76,36 +76,340 @@ class LegalResearchUI:
             # Page config might already be set, ignore the error
             pass
         
-        # Add CSS to help with browser extension conflicts
+        # Enhanced CSS for professional UI
         st.markdown("""
             <style>
-            /* Hide elements that might conflict with browser extensions */
-            iframe[src*="extension"] { display: none !important; }
+            /* Import Google Fonts */
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
             
-            /* Ensure sidebar is visible */
-            .css-1d391kg {
-                display: block !important;
+            /* Global Styles */
+            .main {
+                font-family: 'Inter', sans-serif;
             }
             
-            /* Improve file uploader styling */
-            .uploadedFile { 
-                border: 2px dashed #cccccc;
-                border-radius: 10px;
-                padding: 20px;
-                text-align: center;
-                margin: 10px 0;
-            }
-            
-            /* Custom styling for better UX */
-            .main .block-container {
-                padding-top: 2rem;
-                padding-bottom: 2rem;
-            }
-            
-            /* Hide Streamlit menu and footer for cleaner look */
+            /* Hide Streamlit elements */
             #MainMenu { visibility: hidden; }
             footer { visibility: hidden; }
             header { visibility: hidden; }
+            .css-1rs6os { display: none; }
+            .css-17ziqus { display: none; }
+            
+            /* Main container */
+            .main .block-container {
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+                max-width: 1200px;
+            }
+            
+            /* Header styling */
+            .main-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 2rem;
+                border-radius: 15px;
+                margin-bottom: 2rem;
+                color: white;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            }
+            
+            .main-header h1 {
+                font-size: 2.5rem;
+                font-weight: 700;
+                margin-bottom: 0.5rem;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            }
+            
+            .main-header p {
+                font-size: 1.2rem;
+                opacity: 0.9;
+                margin-bottom: 0;
+            }
+            
+            /* Metrics cards */
+            .metric-card {
+                background: white;
+                padding: 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                border: 1px solid #f0f2f6;
+                text-align: center;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            
+            .metric-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            }
+            
+            .metric-value {
+                font-size: 2rem;
+                font-weight: 700;
+                color: #667eea;
+                margin-bottom: 0.5rem;
+            }
+            
+            .metric-label {
+                font-size: 0.9rem;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            /* Upload section */
+            .upload-section {
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                padding: 2rem;
+                border-radius: 15px;
+                border: 2px dashed #cbd5e1;
+                margin: 1rem 0;
+                text-align: center;
+                transition: all 0.3s ease;
+            }
+            
+            .upload-section:hover {
+                border-color: #667eea;
+                background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+            }
+            
+            /* File uploader styling */
+            .stFileUploader > div {
+                background: white;
+                border-radius: 10px;
+                border: 2px dashed #cbd5e1;
+                padding: 2rem;
+                transition: all 0.3s ease;
+            }
+            
+            .stFileUploader > div:hover {
+                border-color: #667eea;
+                background: #f8fafc;
+            }
+            
+            /* Buttons */
+            .stButton > button {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.6rem 2rem;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            }
+            
+            .stButton > button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            }
+            
+            /* Secondary button */
+            .stButton[data-baseweb="button"]:nth-child(2) > button {
+                background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+                box-shadow: 0 4px 15px rgba(248, 113, 113, 0.3);
+            }
+            
+            /* Sidebar enhancements */
+            .sidebar-header {
+                padding: 1rem;
+                background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+                border-radius: 12px;
+                margin-bottom: 1rem;
+                border: 1px solid #e2e8f0;
+            }
+            
+            .document-stats {
+                background: #f8fafc;
+                border-radius: 8px;
+                padding: 1rem;
+                margin: 0.5rem 0;
+                border: 1px solid #e2e8f0;
+            }
+            
+            .stat-row {
+                display: flex;
+                align-items: center;
+                margin: 0.5rem 0;
+                font-size: 0.9rem;
+            }
+            
+            .stat-icon {
+                width: 20px;
+                margin-right: 8px;
+            }
+            
+            .stat-label {
+                flex: 1;
+                color: #64748b;
+                font-weight: 500;
+            }
+            
+            .stat-value {
+                color: #1e293b;
+                font-weight: 600;
+            }
+            
+            .collection-metrics {
+                background: #f0f9ff;
+                border-radius: 8px;
+                padding: 1rem;
+                margin: 0.5rem 0;
+                border: 1px solid #bae6fd;
+            }
+            
+            .metric-row {
+                display: flex;
+                align-items: center;
+                margin: 0.5rem 0;
+                font-size: 0.9rem;
+            }
+            
+            .metric-icon {
+                width: 20px;
+                margin-right: 8px;
+            }
+            
+            .metric-text {
+                color: #0369a1;
+            }
+            
+            /* Query section */
+            .query-section {
+                background: white;
+                padding: 2rem;
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                border: 1px solid #f0f2f6;
+                margin: 2rem 0;
+            }
+            
+            /* Response section */
+            .response-section {
+                background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+                padding: 2rem;
+                border-radius: 15px;
+                border-left: 4px solid #667eea;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                margin: 2rem 0;
+            }
+            
+            /* Sample questions */
+            .sample-questions {
+                background: #f8fafc;
+                padding: 1.5rem;
+                border-radius: 12px;
+                border: 1px solid #e2e8f0;
+                margin: 1rem 0;
+            }
+            
+            /* Document cards */
+            .document-card {
+                background: white;
+                padding: 1.5rem;
+                border-radius: 12px;
+                border: 1px solid #e2e8f0;
+                margin: 1rem 0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                transition: all 0.3s ease;
+            }
+            
+            .document-card:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            }
+            
+            /* Status indicators */
+            .status-success {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                padding: 0.8rem 1.5rem;
+                border-radius: 8px;
+                font-weight: 600;
+            }
+            
+            .status-warning {
+                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                color: white;
+                padding: 0.8rem 1.5rem;
+                border-radius: 8px;
+                font-weight: 600;
+            }
+            
+            .status-info {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                color: white;
+                padding: 0.8rem 1.5rem;
+                border-radius: 8px;
+                font-weight: 600;
+            }
+            
+            /* Sidebar styling */
+            .css-1d391kg {
+                background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            
+            .css-1d391kg .sidebar-content {
+                color: white;
+            }
+            
+            /* Text area styling */
+            .stTextArea > div > div > textarea {
+                border-radius: 8px;
+                border: 2px solid #e2e8f0;
+                padding: 1rem;
+                font-size: 1rem;
+                transition: border-color 0.3s ease;
+            }
+            
+            .stTextArea > div > div > textarea:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+            
+            /* Expander styling */
+            .streamlit-expanderHeader {
+                background: #f8fafc;
+                border-radius: 8px;
+                border: 1px solid #e2e8f0;
+                padding: 1rem;
+                font-weight: 600;
+            }
+            
+            /* Progress bar */
+            .stProgress > div > div > div {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            
+            /* Custom icons */
+            .icon {
+                font-size: 1.2rem;
+                margin-right: 0.5rem;
+            }
+            
+            /* Animations */
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            .fade-in {
+                animation: fadeIn 0.6s ease-out;
+            }
+            
+            /* Responsive design */
+            @media (max-width: 768px) {
+                .main-header h1 {
+                    font-size: 2rem;
+                }
+                
+                .main-header p {
+                    font-size: 1rem;
+                }
+                
+                .metric-card {
+                    margin-bottom: 1rem;
+                }
+            }
             </style>
         """, unsafe_allow_html=True)
     
@@ -185,34 +489,84 @@ class LegalResearchUI:
             st.code(traceback.format_exc())
     
     def render_header(self):
-        """Render the application header."""
-        st.title("⚖️ Legal Research Assistant")
+        """Render the application header with enhanced styling."""
         st.markdown("""
-        **Advanced RAG System for Legal Document Analysis**
+            <div class="main-header fade-in">
+                <h1>⚖️ Legal Research Assistant</h1>
+                <p>Advanced RAG System for Legal Document Analysis</p>
+                <p style="font-size: 1rem; margin-top: 1rem; opacity: 0.8;">
+                    Upload legal documents and get intelligent answers with proper citations and conflict detection
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
         
-        Upload legal documents (PDF, DOCX, TXT) and ask questions to get contextual answers 
-        with proper citations and conflict detection.
-        """)
-        
-        # Status indicators
-        col1, col2, col3 = st.columns(3)
+        # Enhanced status indicators with better styling
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             doc_count = len(st.session_state.uploaded_documents)
-            st.metric("Documents Uploaded", doc_count)
+            st.markdown(f"""
+                <div class="metric-card fade-in">
+                    <div class="metric-value">📄 {doc_count}</div>
+                    <div class="metric-label">Documents</div>
+                </div>
+            """, unsafe_allow_html=True)
         
         with col2:
             query_count = len(st.session_state.query_history)
-            st.metric("Queries Processed", query_count)
+            st.markdown(f"""
+                <div class="metric-card fade-in">
+                    <div class="metric-value">🔍 {query_count}</div>
+                    <div class="metric-label">Queries</div>
+                </div>
+            """, unsafe_allow_html=True)
         
         with col3:
             status = st.session_state.vector_store_status
-            st.metric("Vector Store", status)
+            status_color = "🟢" if status == "Ready" else "🟡" if status == "Cleared" else "🔴"
+            st.markdown(f"""
+                <div class="metric-card fade-in">
+                    <div class="metric-value">{status_color}</div>
+                    <div class="metric-label">Vector Store</div>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            # Calculate total tokens if available
+            total_tokens = sum(doc.get('token_count', 0) for doc in st.session_state.uploaded_documents)
+            st.markdown(f"""
+                <div class="metric-card fade-in">
+                    <div class="metric-value">🧮 {total_tokens:,}</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+            """, unsafe_allow_html=True)
     
     def render_sidebar(self):
-        """Render the sidebar with controls and settings."""
+        """Render the enhanced sidebar with beautiful styling."""
         with st.sidebar:
-            st.header("📁 Document Management")
+            # Beautiful header
+            st.markdown("""
+                <div class="sidebar-header fade-in">
+                    <h2 style="color: #1e293b; margin: 0; display: flex; align-items: center;">
+                        <span class="icon" style="margin-right: 10px;">⚖️</span>Legal Research Hub
+                    </h2>
+                    <p style="color: #64748b; margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+                        AI-Powered Document Analysis
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            # Beautiful divider
+            st.markdown("""
+                <div style="height: 3px; background: linear-gradient(90deg, #667eea, #764ba2); margin: 1rem 0; border-radius: 2px;"></div>
+            """, unsafe_allow_html=True)
+            
+            # Enhanced document management section
+            st.markdown("""
+                <h3 style="color: #374151; margin-bottom: 1rem; display: flex; align-items: center;">
+                    <span class="icon" style="margin-right: 8px;">📁</span>Document Management
+                </h3>
+            """, unsafe_allow_html=True)
             
             # File upload section
             self.render_file_upload()
@@ -221,68 +575,157 @@ class LegalResearchUI:
             self.render_document_list()
             
             # Settings section
-            st.header("⚙️ Settings")
+            st.markdown("""
+                <div style="height: 1px; background: linear-gradient(90deg, transparent, #e2e8f0, transparent); margin: 1.5rem 0;"></div>
+                <h3 style="color: #374151; margin-bottom: 1rem; display: flex; align-items: center;">
+                    <span class="icon" style="margin-right: 8px;">⚙️</span>Settings
+                </h3>
+            """, unsafe_allow_html=True)
             self.render_settings()
             
-            # System status
-            st.header("📊 System Status")
+            # System status section
+            st.markdown("""
+                <div style="height: 1px; background: linear-gradient(90deg, transparent, #e2e8f0, transparent); margin: 1.5rem 0;"></div>
+                <h3 style="color: #374151; margin-bottom: 1rem; display: flex; align-items: center;">
+                    <span class="icon" style="margin-right: 8px;">📊</span>System Status
+                </h3>
+            """, unsafe_allow_html=True)
             self.render_system_status()
+            
+            # Beautiful footer
+            st.markdown("""
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                    <p style="color: #9ca3af; font-size: 0.8rem; text-align: center; margin: 0;">
+                        Powered by AI • Built with Streamlit
+                    </p>
+                    <p style="color: #9ca3af; font-size: 0.75rem; text-align: center; margin: 0.25rem 0 0 0;">
+                        © 2024 Legal Research Assistant
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
     
     def render_file_upload(self):
-        """Render file upload interface."""
-        st.subheader("Upload Legal Documents")
+        """Render enhanced file upload interface."""
+        st.markdown("""
+            <div class="upload-section fade-in">
+                <h4 style="color: #374151; margin-bottom: 1rem; display: flex; align-items: center;">
+                    <span class="icon" style="margin-right: 8px;">📤</span>Upload Legal Documents
+                </h4>
+            </div>
+        """, unsafe_allow_html=True)
         
         uploaded_files = st.file_uploader(
             "Choose files",
             type=['pdf', 'docx', 'txt'],
             accept_multiple_files=True,
-            help="Upload PDF, DOCX, or TXT files containing legal documents"
+            help="Upload PDF, DOCX, or TXT files containing legal documents",
+            label_visibility="collapsed"
         )
         
         if uploaded_files:
-            st.success(f"✅ {len(uploaded_files)} file(s) selected")
-            if st.button("Process Documents", type="primary"):
+            st.markdown(f"""
+                <div class="status-success fade-in">
+                    <span class="icon">✅</span>
+                    {len(uploaded_files)} file(s) selected
+                </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("🚀 Process Documents", type="primary", use_container_width=True):
                 self.process_uploaded_files(uploaded_files)
         else:
-            st.info("👆 Please select files to upload using the file picker above")
+            st.markdown("""
+                <div class="status-info fade-in">
+                    <span class="icon">👆</span>
+                    Please select files to upload
+                </div>
+            """, unsafe_allow_html=True)
         
-        # Clear documents button
+        # Clear documents button with enhanced styling
         if st.session_state.uploaded_documents:
-            if st.button("Clear All Documents", type="secondary"):
+            if st.button("🗑️ Clear All Documents", type="secondary", use_container_width=True):
                 self.clear_all_documents()
     
     def render_document_list(self):
-        """Render list of uploaded documents."""
+        """Render enhanced list of uploaded documents."""
         if st.session_state.uploaded_documents:
-            st.subheader("Uploaded Documents")
+            st.markdown("""
+                <h4 style="color: #374151; margin: 1.5rem 0 1rem 0; display: flex; align-items: center;">
+                    <span class="icon" style="margin-right: 8px;">📄</span>Uploaded Documents
+                </h4>
+            """, unsafe_allow_html=True)
             
             for i, doc in enumerate(st.session_state.uploaded_documents):
-                with st.expander(f"📄 {doc['filename']}"):
-                    st.write(f"**Type:** {doc['file_type']}")
-                    st.write(f"**Size:** {format_file_size(doc['file_size'])}")
-                    st.write(f"**Sections:** {doc['section_count']}")
-                    st.write(f"**Tokens:** {doc['token_count']:,}")
+                with st.expander(f"📄 {doc['filename']}", expanded=False):
+                    # Enhanced document info display
+                    st.markdown(f"""
+                        <div class="document-stats">
+                            <div class="stat-row">
+                                <span class="stat-icon">📋</span>
+                                <span class="stat-label">Type:</span>
+                                <span class="stat-value">{doc['file_type'].upper()}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-icon">📏</span>
+                                <span class="stat-label">Size:</span>
+                                <span class="stat-value">{format_file_size(doc['file_size'])}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-icon">🧩</span>
+                                <span class="stat-label">Sections:</span>
+                                <span class="stat-value">{doc['section_count']}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-icon">🧮</span>
+                                <span class="stat-label">Tokens:</span>
+                                <span class="stat-value">{doc['token_count']:,}</span>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
                     
-                    if st.button(f"Remove {doc['filename']}", key=f"remove_{i}"):
+                    # Enhanced remove button
+                    if st.button(f"🗑️ Remove", key=f"remove_{i}", type="secondary", use_container_width=True):
                         self.remove_document(i)
                         st.rerun()
     
     def render_settings(self):
-        """Render application settings."""
-        # API Provider info
-        st.subheader("API Provider")
+        """Render enhanced application settings."""
+        # Enhanced API Provider info
+        st.markdown("""
+            <h4 style="color: #374151; margin-bottom: 1rem; display: flex; align-items: center;">
+                <span class="icon" style="margin-right: 8px;">🔗</span>API Provider
+            </h4>
+        """, unsafe_allow_html=True)
+        
         provider_icon = "🤖" if settings.api_provider == "gemini" else "🔥"
-        st.info(f"{provider_icon} Using {settings.api_provider.title()} API")
+        
+        st.markdown(f"""
+            <div class="status-info fade-in">
+                <span class="icon">{provider_icon}</span>
+                Using {settings.api_provider.title()} API
+            </div>
+        """, unsafe_allow_html=True)
         
         if settings.api_provider == "gemini" and not settings.gemini_api_key:
-            st.error("⚠️ Gemini API key not configured!")
-            st.text("Please add your Gemini API key to the .env file")
+            st.markdown("""
+                <div class="status-warning fade-in">
+                    <span class="icon">⚠️</span>
+                    Gemini API key not configured!
+                </div>
+            """, unsafe_allow_html=True)
         elif settings.api_provider == "openai" and not settings.openai_api_key:
-            st.error("⚠️ OpenAI API key not configured!")
-            st.text("Please add your OpenAI API key to the .env file")
+            st.markdown("""
+                <div class="status-warning fade-in">
+                    <span class="icon">⚠️</span>
+                    OpenAI API key not configured!
+                </div>
+            """, unsafe_allow_html=True)
         
-        # Retrieval settings
-        st.subheader("Retrieval Settings")
+        # Enhanced Retrieval settings
+        st.markdown("""
+            <h4 style="color: #374151; margin: 1.5rem 0 1rem 0; display: flex; align-items: center;">
+                <span class="icon" style="margin-right: 8px;">🔍</span>Retrieval Settings
+            </h4>
+        """, unsafe_allow_html=True)
         
         top_k = st.slider(
             "Number of documents to retrieve",
@@ -299,8 +742,12 @@ class LegalResearchUI:
             help="Minimum similarity score for document retrieval"
         )
         
-        # Generation settings
-        st.subheader("Generation Settings")
+        # Enhanced Generation settings
+        st.markdown("""
+            <h4 style="color: #374151; margin: 1.5rem 0 1rem 0; display: flex; align-items: center;">
+                <span class="icon" style="margin-right: 8px;">⚡</span>Generation Settings
+            </h4>
+        """, unsafe_allow_html=True)
         
         temperature = st.slider(
             "Response creativity",
@@ -318,9 +765,14 @@ class LegalResearchUI:
             help="Maximum number of tokens in the response"
         )
         
-        # Update settings (in a real app, you'd save these)
-        if st.button("Update Settings"):
-            st.success("Settings updated!")
+        # Enhanced update button
+        if st.button("💾 Update Settings", type="secondary", use_container_width=True):
+            st.markdown("""
+                <div class="status-success fade-in">
+                    <span class="icon">✅</span>
+                    Settings updated successfully!
+                </div>
+            """, unsafe_allow_html=True)
     
     def render_system_status(self):
         """Render system status information."""
@@ -351,69 +803,140 @@ class LegalResearchUI:
             st.info(st.session_state.processing_status)
     
     def render_main_content(self):
-        """Render the main content area."""
-        # Add file upload to main content as backup
-        st.header("📄 Document Upload")
+        """Render the main content area with enhanced styling."""
+        # Enhanced document upload section
+        st.markdown("""
+            <div class="upload-section fade-in">
+                <h2 style="color: #1e293b; margin-bottom: 1rem;">
+                    <span class="icon">📄</span>Document Upload Center
+                </h2>
+            </div>
+        """, unsafe_allow_html=True)
         
         # Check if we have any uploaded documents in session state
         if not st.session_state.uploaded_documents:
-            st.info("ℹ️ No documents uploaded yet. Please upload documents to get started.")
+            st.markdown("""
+                <div class="status-info fade-in">
+                    <span class="icon">ℹ️</span>Ready to process your legal documents. 
+                    Upload PDF, DOCX, or TXT files to get started with intelligent legal analysis.
+                </div>
+            """, unsafe_allow_html=True)
             
-            # Main content file uploader as primary interface
+            # Main content file uploader with enhanced styling
+            st.markdown("### 📤 Upload Your Documents")
             main_uploaded_files = st.file_uploader(
-                "Upload Legal Documents",
+                "Choose your legal documents",
                 type=['pdf', 'docx', 'txt'],
                 accept_multiple_files=True,
-                help="Upload PDF, DOCX, or TXT files containing legal documents",
+                help="📋 Supported formats: PDF, DOCX, TXT • Maximum size: 10MB per file",
                 key="main_content_uploader"
             )
             
             if main_uploaded_files:
-                st.success(f"✅ {len(main_uploaded_files)} file(s) selected")
-                col1, col2 = st.columns([2, 1])
+                # Enhanced file selection display
+                st.markdown(f"""
+                    <div class="status-success fade-in">
+                        <span class="icon">✅</span>
+                        {len(main_uploaded_files)} file(s) selected • 
+                        Total size: {sum(f.size for f in main_uploaded_files):,} bytes
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                # Enhanced button layout
+                col1, col2, col3 = st.columns([2, 1, 1])
                 with col1:
-                    if st.button("📤 Process Documents", type="primary", use_container_width=True):
-                        self.process_uploaded_files(main_uploaded_files)
+                    if st.button("� Process Documents", type="primary", use_container_width=True):
+                        with st.spinner("🔄 Processing your documents..."):
+                            self.process_uploaded_files(main_uploaded_files)
                 with col2:
-                    st.write(f"**Total size:** {sum(f.size for f in main_uploaded_files)} bytes")
+                    st.markdown(f"**Files:** {len(main_uploaded_files)}")
+                with col3:
+                    file_types = list(set(f.name.split('.')[-1].upper() for f in main_uploaded_files))
+                    st.markdown(f"**Types:** {', '.join(file_types)}")
         else:
-            st.success(f"✅ {len(st.session_state.uploaded_documents)} documents uploaded")
+            # Enhanced uploaded documents display
+            st.markdown(f"""
+                <div class="status-success fade-in">
+                    <span class="icon">✅</span>
+                    Successfully uploaded {len(st.session_state.uploaded_documents)} documents
+                </div>
+            """, unsafe_allow_html=True)
             
-            # Show uploaded documents
-            with st.expander("📋 Uploaded Documents", expanded=True):
+            # Enhanced document cards
+            with st.expander("📋 Manage Uploaded Documents", expanded=True):
                 for i, doc in enumerate(st.session_state.uploaded_documents):
-                    col1, col2, col3 = st.columns([3, 1, 1])
-                    with col1:
-                        st.write(f"📄 **{doc['filename']}** ({doc['file_type']})")
-                    with col2:
-                        st.write(f"{doc['section_count']} sections")
-                    with col3:
-                        if st.button("🗑️", key=f"remove_main_{i}", help=f"Remove {doc['filename']}"):
-                            self.remove_document(i)
-                            st.rerun()
+                    with st.container():
+                        col1, col2, col3, col4, col5 = st.columns([3, 1, 1, 1, 1])
+                        with col1:
+                            st.markdown(f"""
+                                <div class="document-card">
+                                    <strong>📄 {doc['filename']}</strong>
+                                    <br><small style="color: #64748b;">{doc['file_type']} Document</small>
+                                </div>
+                            """, unsafe_allow_html=True)
+                        with col2:
+                            st.metric("Sections", doc['section_count'])
+                        with col3:
+                            st.metric("Tokens", f"{doc['token_count']:,}")
+                        with col4:
+                            st.metric("Size", format_file_size(doc['file_size']))
+                        with col5:
+                            if st.button("🗑️", key=f"remove_main_{i}", help=f"Remove {doc['filename']}", type="secondary"):
+                                self.remove_document(i)
+                                st.rerun()
+                        st.divider()
             
-            if st.button("🗑️ Clear All Documents", type="secondary"):
-                self.clear_all_documents()
+            # Enhanced clear all button
+            col1, col2, col3 = st.columns([2, 1, 2])
+            with col2:
+                if st.button("🗑️ Clear All Documents", type="secondary", use_container_width=True):
+                    self.clear_all_documents()
         
-        st.divider()
+        # Enhanced query interface
+        st.markdown("""
+            <div class="query-section fade-in">
+                <h2 style="color: #1e293b; margin-bottom: 1.5rem;">
+                    <span class="icon">🔍</span>Legal Question Analysis
+                </h2>
+            </div>
+        """, unsafe_allow_html=True)
         
-        # Query interface
         self.render_query_interface()
         
-        # Results display
+        # Results display with enhanced styling
         if st.session_state.current_response:
+            st.markdown("""
+                <div class="response-section fade-in">
+                    <h2 style="color: #1e293b; margin-bottom: 1.5rem;">
+                        <span class="icon">📋</span>Analysis Results
+                    </h2>
+                </div>
+            """, unsafe_allow_html=True)
             self.render_response_display()
         
-        # Query history
+        # Query history with enhanced styling
         if st.session_state.query_history:
+            st.markdown("""
+                <div class="query-section fade-in">
+                    <h2 style="color: #1e293b; margin-bottom: 1.5rem;">
+                        <span class="icon">📜</span>Query History
+                    </h2>
+                </div>
+            """, unsafe_allow_html=True)
             self.render_query_history()
     
     def render_query_interface(self):
-        """Render the query input interface."""
-        st.header("🔍 Ask a Legal Question")
-        
-        # Sample queries
-        with st.expander("💡 Sample Questions"):
+        """Render the enhanced query input interface."""
+        # Sample queries with better styling
+        with st.expander("� Sample Legal Questions", expanded=False):
+            st.markdown("""
+                <div class="sample-questions">
+                    <p style="margin-bottom: 1rem; color: #64748b; font-size: 0.9rem;">
+                        Click any question below to use it as a starting point:
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
+            
             sample_queries = [
                 "What are the termination clauses in the contract?",
                 "What are the liability limitations?",
@@ -423,105 +946,182 @@ class LegalResearchUI:
                 "What are the confidentiality obligations?"
             ]
             
-            for query in sample_queries:
-                if st.button(f"📝 {query}", key=f"sample_{hash(query)}"):
-                    st.session_state.current_query = query
+            cols = st.columns(2)
+            for i, query in enumerate(sample_queries):
+                with cols[i % 2]:
+                    if st.button(f"📝 {query}", key=f"sample_{hash(query)}", use_container_width=True):
+                        st.session_state.current_query = query
+                        st.rerun()
         
-        # Query input
+        # Enhanced query input
+        st.markdown("### ✏️ Your Legal Question")
         query = st.text_area(
             "Enter your legal question:",
             value=st.session_state.get('current_query', ''),
-            height=100,
-            placeholder="e.g., What are the termination conditions in the employment contract?"
+            height=120,
+            placeholder="e.g., What are the termination conditions in the employment contract?",
+            help="💡 Tip: Be specific about what you're looking for. You can ask about clauses, terms, obligations, rights, or any other legal concepts."
         )
         
-        # Advanced options
-        with st.expander("⚙️ Advanced Options"):
+        # Advanced options with better styling
+        with st.expander("⚙️ Advanced Search Options"):
             col1, col2 = st.columns(2)
             
             with col1:
                 document_filter = st.multiselect(
-                    "Filter by document type",
+                    "📄 Filter by document type",
                     options=['PDF', 'DOCX', 'TXT'],
                     help="Only search in documents of selected types"
                 )
             
             with col2:
                 include_citations = st.checkbox(
-                    "Include detailed citations",
+                    "📚 Include detailed citations",
                     value=True,
                     help="Include detailed section references in the response"
                 )
         
-        # Search button
+        # Enhanced search button
         col1, col2, col3 = st.columns([1, 2, 1])
         
         with col2:
-            if st.button("🔍 Search Legal Documents", type="primary", use_container_width=True):
+            search_disabled = not query.strip() or not st.session_state.uploaded_documents
+            button_text = "🔍 Analyze Legal Documents" if not search_disabled else "⚠️ Upload documents first"
+            
+            if st.button(button_text, type="primary", use_container_width=True, disabled=search_disabled):
                 if query.strip():
                     if st.session_state.uploaded_documents:
-                        self.process_query(query, document_filter, include_citations)
+                        with st.spinner("🔄 Analyzing legal documents..."):
+                            self.process_query(query, document_filter, include_citations)
                     else:
-                        st.warning("Please upload legal documents first!")
+                        st.warning("📄 Please upload legal documents first!")
                 else:
-                    st.warning("Please enter a question!")
+                    st.warning("✏️ Please enter a question!")
+        
+        # Help text
+        if not st.session_state.uploaded_documents:
+            st.markdown("""
+                <div class="status-warning fade-in">
+                    <span class="icon">⚠️</span>
+                    Upload legal documents above before asking questions
+                </div>
+            """, unsafe_allow_html=True)
     
     def render_response_display(self):
-        """Render the response display area."""
+        """Render the enhanced response display area."""
         response = st.session_state.current_response
         
-        st.header("📋 Analysis Results")
-        
-        # Response overview
+        # Enhanced response overview with beautiful metrics
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.metric("Sources Found", len(response.get('sources', [])))
+            sources_count = len(response.get('sources', []))
+            st.markdown(f"""
+                <div class="metric-card fade-in">
+                    <div class="metric-value" style="color: #059669;">📚 {sources_count}</div>
+                    <div class="metric-label">Sources Found</div>
+                </div>
+            """, unsafe_allow_html=True)
         
         with col2:
-            st.metric("Citations", len(response.get('citations', [])))
+            citations_count = len(response.get('citations', []))
+            st.markdown(f"""
+                <div class="metric-card fade-in">
+                    <div class="metric-value" style="color: #0284c7;">📖 {citations_count}</div>
+                    <div class="metric-label">Citations</div>
+                </div>
+            """, unsafe_allow_html=True)
         
         with col3:
             conflicts = "Yes" if response.get('has_conflicts', False) else "No"
-            st.metric("Conflicts Detected", conflicts)
+            conflict_color = "#dc2626" if conflicts == "Yes" else "#059669"
+            conflict_icon = "⚠️" if conflicts == "Yes" else "✅"
+            st.markdown(f"""
+                <div class="metric-card fade-in">
+                    <div class="metric-value" style="color: {conflict_color};">{conflict_icon} {conflicts}</div>
+                    <div class="metric-label">Conflicts</div>
+                </div>
+            """, unsafe_allow_html=True)
         
         with col4:
             response_time = response.get('response_time_seconds', 0)
-            st.metric("Response Time", f"{response_time:.2f}s")
+            st.markdown(f"""
+                <div class="metric-card fade-in">
+                    <div class="metric-value" style="color: #7c3aed;">⚡ {response_time:.1f}s</div>
+                    <div class="metric-label">Response Time</div>
+                </div>
+            """, unsafe_allow_html=True)
         
-        # Main response
-        st.subheader("📄 Legal Analysis")
+        st.markdown("<br>", unsafe_allow_html=True)
         
-        # Format response for display
+        # Enhanced main response
+        st.markdown("""
+            <h3 style="color: #1e293b; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                <span class="icon">📄</span>Legal Analysis
+            </h3>
+        """, unsafe_allow_html=True)
+        
+        # Format response for display with enhanced styling
         formatted_response = ResponseFormatter.format_for_display(response)
-        st.markdown(formatted_response['formatted_answer'])
         
-        # Sources and citations
-        if response.get('sources'):
-            with st.expander("📚 Sources"):
-                for source in response['sources']:
-                    st.write(f"• {source}")
+        # Display answer in a beautiful container
+        st.markdown(f"""
+            <div class="response-section fade-in" style="background: white; border-left: 4px solid #10b981;">
+                {formatted_response['formatted_answer']}
+            </div>
+        """, unsafe_allow_html=True)
         
-        if response.get('citations'):
-            with st.expander("📖 Citations"):
-                for i, citation in enumerate(response['citations'], 1):
-                    st.write(f"{i}. {citation}")
+        # Enhanced sections for additional information
+        col1, col2 = st.columns(2)
         
-        # Conflicts section
+        with col1:
+            # Sources section with enhanced styling
+            if response.get('sources'):
+                with st.expander(f"📚 Sources ({len(response['sources'])})", expanded=False):
+                    for i, source in enumerate(response['sources'], 1):
+                        st.markdown(f"""
+                            <div class="document-card">
+                                <strong>{i}.</strong> {source}
+                            </div>
+                        """, unsafe_allow_html=True)
+        
+        with col2:
+            # Citations section with enhanced styling
+            if response.get('citations'):
+                with st.expander(f"📖 Citations ({len(response['citations'])})", expanded=False):
+                    for i, citation in enumerate(response['citations'], 1):
+                        st.markdown(f"""
+                            <div class="document-card">
+                                <strong>{i}.</strong> {citation}
+                            </div>
+                        """, unsafe_allow_html=True)
+        
+        # Conflicts section with enhanced warning styling
         if response.get('has_conflicts'):
             with st.expander("⚠️ Conflicts Detected", expanded=True):
-                st.warning("The analysis found conflicting information in the documents.")
+                st.markdown("""
+                    <div class="status-warning fade-in">
+                        <span class="icon">⚠️</span>
+                        The analysis found conflicting information in the documents.
+                    </div>
+                """, unsafe_allow_html=True)
                 
-                for conflict in response.get('conflicts', []):
-                    st.write(f"**Conflict Type:** {conflict.get('type', 'Unknown')}")
-                    st.write(f"**Between Documents:** {', '.join(conflict.get('documents', []))}")
-                    if conflict.get('keywords'):
-                        st.write(f"**Key Terms:** {', '.join(conflict.get('keywords', []))}")
-                    st.write("---")
+                for i, conflict in enumerate(response.get('conflicts', []), 1):
+                    st.markdown(f"""
+                        <div class="document-card" style="border-left: 4px solid #f59e0b;">
+                            <strong>Conflict {i}:</strong><br>
+                            <strong>Type:</strong> {conflict.get('type', 'Unknown')}<br>
+                            <strong>Between Documents:</strong> {', '.join(conflict.get('documents', []))}<br>
+                            {f"<strong>Key Terms:</strong> {', '.join(conflict.get('keywords', []))}" if conflict.get('keywords') else ""}
+                        </div>
+                    """, unsafe_allow_html=True)
         
-        # Download response
-        if st.button("💾 Download Analysis"):
-            self.download_response(response)
+        # Enhanced download section
+        st.markdown("<br>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col2:
+            if st.button("💾 Download Analysis", type="secondary", use_container_width=True):
+                self.download_response(response)
     
     def render_query_history(self):
         """Render query history section."""
