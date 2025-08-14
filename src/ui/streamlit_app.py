@@ -127,11 +127,47 @@ class LegalResearchUI:
             
             st.write("🔧 Rendering sidebar...")
             
-            # Force sidebar to appear with a simple test
-            with st.sidebar:
-                st.write("🚨 SIDEBAR TEST - If you see this, the sidebar is working!")
-            
-            self.render_sidebar()
+            # AGGRESSIVE sidebar forcing - try multiple approaches
+            try:
+                # Method 1: Simple sidebar test
+                st.sidebar.write("🚨 SIDEBAR TEST 1")
+                st.sidebar.header("📁 Document Management - TEST")
+                
+                # Method 2: Force sidebar with file uploader directly
+                st.sidebar.subheader("Upload Legal Documents")
+                sidebar_files = st.sidebar.file_uploader(
+                    "Choose files (Sidebar)",
+                    type=['pdf', 'docx', 'txt'],
+                    accept_multiple_files=True,
+                    help="Upload PDF, DOCX, or TXT files",
+                    key="sidebar_uploader"
+                )
+                
+                if sidebar_files:
+                    st.sidebar.success(f"✅ {len(sidebar_files)} file(s) selected in sidebar")
+                    if st.sidebar.button("Process Documents (Sidebar)", type="primary"):
+                        self.process_uploaded_files(sidebar_files)
+                
+                # Method 3: Try the normal sidebar rendering
+                self.render_sidebar()
+                
+            except Exception as sidebar_error:
+                st.error(f"Sidebar error: {sidebar_error}")
+                # FALLBACK: Put upload in main content if sidebar fails
+                st.warning("⚠️ Sidebar failed - using main content for file upload")
+                st.header("📁 Document Upload (Main Content)")
+                main_files = st.file_uploader(
+                    "Choose files (Main Content)",
+                    type=['pdf', 'docx', 'txt'],
+                    accept_multiple_files=True,
+                    help="Upload PDF, DOCX, or TXT files",
+                    key="main_uploader"
+                )
+                
+                if main_files:
+                    st.success(f"✅ {len(main_files)} file(s) selected")
+                    if st.button("Process Documents (Main)", type="primary"):
+                        self.process_uploaded_files(main_files)
             
             st.write("🔧 Rendering main content...")
             self.render_main_content()
@@ -316,6 +352,51 @@ class LegalResearchUI:
     
     def render_main_content(self):
         """Render the main content area."""
+        # Add file upload to main content as backup
+        st.header("📄 Document Upload")
+        
+        # Check if we have any uploaded documents in session state
+        if not st.session_state.uploaded_documents:
+            st.info("ℹ️ No documents uploaded yet. Please upload documents to get started.")
+            
+            # Main content file uploader as primary interface
+            main_uploaded_files = st.file_uploader(
+                "Upload Legal Documents",
+                type=['pdf', 'docx', 'txt'],
+                accept_multiple_files=True,
+                help="Upload PDF, DOCX, or TXT files containing legal documents",
+                key="main_content_uploader"
+            )
+            
+            if main_uploaded_files:
+                st.success(f"✅ {len(main_uploaded_files)} file(s) selected")
+                col1, col2 = st.columns([2, 1])
+                with col1:
+                    if st.button("📤 Process Documents", type="primary", use_container_width=True):
+                        self.process_uploaded_files(main_uploaded_files)
+                with col2:
+                    st.write(f"**Total size:** {sum(f.size for f in main_uploaded_files)} bytes")
+        else:
+            st.success(f"✅ {len(st.session_state.uploaded_documents)} documents uploaded")
+            
+            # Show uploaded documents
+            with st.expander("📋 Uploaded Documents", expanded=True):
+                for i, doc in enumerate(st.session_state.uploaded_documents):
+                    col1, col2, col3 = st.columns([3, 1, 1])
+                    with col1:
+                        st.write(f"📄 **{doc['filename']}** ({doc['file_type']})")
+                    with col2:
+                        st.write(f"{doc['section_count']} sections")
+                    with col3:
+                        if st.button("🗑️", key=f"remove_main_{i}", help=f"Remove {doc['filename']}"):
+                            self.remove_document(i)
+                            st.rerun()
+            
+            if st.button("🗑️ Clear All Documents", type="secondary"):
+                self.clear_all_documents()
+        
+        st.divider()
+        
         # Query interface
         self.render_query_interface()
         
