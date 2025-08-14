@@ -326,6 +326,8 @@ class LegalResearchUI:
             st.session_state.documents_just_processed = False
         if 'show_query_hint' not in st.session_state:
             st.session_state.show_query_hint = False
+        if 'force_scroll_to_query' not in st.session_state:
+            st.session_state.force_scroll_to_query = False
     
     def render_header(self):
         """Render the minimal header."""
@@ -365,6 +367,11 @@ class LegalResearchUI:
                 if st.button("📤 Process Documents", use_container_width=True, type="primary"):
                     with st.spinner("Processing documents..."):
                         self.process_uploaded_files(uploaded_files)
+                        # Set flags for smooth transition
+                        st.session_state.documents_just_processed = True
+                        st.session_state.show_query_hint = True
+                        # Use success message to guide user
+                        st.success("🎉 Documents processed! Scroll down to ask your legal question.")
                         st.rerun()  # Immediately rerun to show the updated UI with focus
             
             # Document list
@@ -388,6 +395,10 @@ class LegalResearchUI:
     
     def render_query_interface(self):
         """Render the query interface."""
+        # Add anchor for auto-scroll after document processing
+        if st.session_state.get('documents_just_processed', False) or st.session_state.get('force_scroll_to_query', False):
+            st.markdown('<div id="query-section"></div>', unsafe_allow_html=True)
+        
         st.markdown('<div class="material-card">', unsafe_allow_html=True)
         st.markdown('<div class="section-header">🔍 Ask a Question</div>', unsafe_allow_html=True)
         
@@ -405,7 +416,7 @@ class LegalResearchUI:
             .stTextArea > div > div > textarea {
                 border: 2px solid #00c851 !important;
                 box-shadow: 0 0 10px rgba(0, 200, 81, 0.3) !important;
-                animation: glow 1.5s ease-in-out;
+                animation: glow 2s ease-in-out;
             }
             @keyframes glow {
                 0% { box-shadow: 0 0 5px rgba(0, 200, 81, 0.5); }
@@ -419,10 +430,8 @@ class LegalResearchUI:
         
         # Query input with improved UX
         placeholder_text = "What are the key provisions regarding contract termination?"
-        if st.session_state.get('documents_just_processed', False):
-            placeholder_text = "Great! Now ask your legal question about the uploaded documents..."
-            # Clear the flag after first render
-            st.session_state.documents_just_processed = False
+        if st.session_state.get('documents_just_processed', False) or st.session_state.get('force_scroll_to_query', False):
+            placeholder_text = "🎯 Perfect! Now ask your legal question about the uploaded documents..."
         
         # Query input
         query = st.text_area(
@@ -432,20 +441,47 @@ class LegalResearchUI:
             key="legal_question_input"
         )
         
-        # UX Improvement: Auto-focus on query input after document processing
-        if st.session_state.get('documents_just_processed', False):
+        # Enhanced auto-focus and scroll mechanism
+        if st.session_state.get('documents_just_processed', False) or st.session_state.get('force_scroll_to_query', False):
             st.markdown("""
             <script>
-            // Auto-focus on the query input field
+            // Enhanced auto-focus and scroll to query section
             setTimeout(function() {
-                const textarea = window.parent.document.querySelector('textarea[aria-label="Legal Question"]');
-                if (textarea) {
-                    textarea.focus();
-                    textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // First, scroll to the query section
+                const querySection = window.parent.document.getElementById('query-section');
+                if (querySection) {
+                    querySection.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
                 }
-            }, 500);
+                
+                // Then focus on the textarea
+                setTimeout(function() {
+                    const textareas = window.parent.document.querySelectorAll('textarea');
+                    const legalQuestionTextarea = Array.from(textareas).find(ta => 
+                        ta.placeholder && (
+                            ta.placeholder.includes('legal question') || 
+                            ta.placeholder.includes('Perfect!')
+                        )
+                    );
+                    if (legalQuestionTextarea) {
+                        legalQuestionTextarea.focus();
+                        legalQuestionTextarea.click();
+                        // Additional visual feedback
+                        legalQuestionTextarea.style.transform = 'scale(1.02)';
+                        legalQuestionTextarea.style.transition = 'transform 0.3s ease';
+                        setTimeout(() => {
+                            legalQuestionTextarea.style.transform = 'scale(1)';
+                        }, 300);
+                    }
+                }, 800);
+            }, 100);
             </script>
             """, unsafe_allow_html=True)
+            # Clear the flags after first render
+            st.session_state.documents_just_processed = False
+            st.session_state.force_scroll_to_query = False
         
         col1, col2 = st.columns([2, 1])
         
@@ -715,7 +751,15 @@ class LegalResearchUI:
         status_text.text("Processing complete!")
         
         if processed_docs:
-            st.success(f"Successfully processed {len(processed_docs)} documents!")
+            # Enhanced success message with clear next step guidance
+            st.success(f"🎉 Successfully processed {len(processed_docs)} documents!")
+            st.info("👇 **Next Step:** The page will auto-scroll to the question section below!")
+            
+            # Add a manual button as backup
+            if st.button("🚀 Go to Questions Section", use_container_width=True, type="primary"):
+                st.session_state.force_scroll_to_query = True
+                st.rerun()
+                
             st.session_state.vector_store_status = "Ready"
             # Ensure pipeline is persisted after successful processing
             st.session_state.ingestion_pipeline = self.ingestion_pipeline
