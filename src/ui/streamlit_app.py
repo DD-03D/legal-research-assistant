@@ -460,8 +460,19 @@ class LegalResearchUI:
             if response.get('sources'):
                 with st.expander("📚 Sources", expanded=False):
                     for i, source in enumerate(response['sources'], 1):
-                        st.markdown(f"**{i}.** {source.get('content', 'No content')}")
-                        st.caption(f"Document: {source.get('document_id', 'Unknown')}")
+                        # Handle both string and dict sources
+                        if isinstance(source, dict):
+                            content = source.get('content', 'No content')
+                            doc_id = source.get('document_id', 'Unknown')
+                        elif isinstance(source, str):
+                            content = source
+                            doc_id = 'Unknown'
+                        else:
+                            content = str(source)
+                            doc_id = 'Unknown'
+                        
+                        st.markdown(f"**{i}.** {content}")
+                        st.caption(f"Document: {doc_id}")
             
             # Citations
             if response.get('citations'):
