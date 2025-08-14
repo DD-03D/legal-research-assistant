@@ -12,56 +12,59 @@ from datetime import datetime
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
-# Import our modules
+# Initialize fallback classes first
+class DocumentIngestionPipeline:
+    def __init__(self, vector_store_manager=None):
+        self.vector_store = None
+    def ingest_file(self, file_path):
+        return {"status": "error", "message": "Service unavailable"}
+    def get_collection_info(self):
+        return {"documents": 0, "status": "unavailable"}
+
+class LegalResponseGenerator:
+    def __init__(self, vector_store=None, api_provider=None):
+        pass
+    def generate_response(self, query, **kwargs):
+        return {"response": "Service temporarily unavailable. Please try again later.", "sources": []}
+
+class PerformanceEvaluator:
+    def __init__(self):
+        self.performance_logs = []
+    def measure_end_to_end_latency(self, query, response_generator):
+        return {"latency": 0, "status": "unavailable"}
+
+def validate_file_type(filename):
+    return filename.endswith(('.pdf', '.docx', '.txt'))
+
+def format_file_size(size_bytes):
+    return f"{size_bytes/1024:.1f} KB"
+
+# Try to import real modules and override fallbacks
 try:
     from src.ingestion.vector_store import DocumentIngestionPipeline
-    from src.generation.legal_rag import LegalResponseGenerator
+    from src.generation.legal_rag import LegalResponseGenerator  
     from src.evaluation.metrics import PerformanceEvaluator
-    try:
-        from config.settings import settings
-    except ImportError:
-        # Create minimal settings fallback
-        class MockSettings:
-            gemini_api_key = ""
-            openai_api_key = ""
-        settings = MockSettings()
-    
-    try:
-        from src.utils import validate_file_type, format_file_size
-    except ImportError:
-        # Create utility fallbacks
-        def validate_file_type(filename):
-            return filename.endswith(('.pdf', '.docx', '.txt'))
-        def format_file_size(size_bytes):
-            return f"{size_bytes/1024:.1f} KB"
+    print("✅ Successfully imported all core modules")
 except ImportError as e:
-    print(f"Import error: {e}")
-    st.error(f"Failed to import required modules: {e}")
-    # Create minimal fallbacks with basic functionality
-    class DocumentIngestionPipeline:
-        def __init__(self, vector_store_manager=None):
-            self.vector_store = None
-        def ingest_file(self, file_path):
-            return {"status": "error", "message": "Service unavailable"}
-        def get_collection_info(self):
-            return {"documents": 0, "status": "unavailable"}
-    
-    class LegalResponseGenerator:
-        def __init__(self, vector_store=None, api_provider=None):
-            pass
-        def generate_response(self, query, **kwargs):
-            return {"response": "Service temporarily unavailable. Please try again later.", "sources": []}
-    
-    class PerformanceEvaluator:
-        def __init__(self):
-            self.performance_logs = []
-        def measure_end_to_end_latency(self, query, response_generator):
-            return {"latency": 0, "status": "unavailable"}
-    
-    def validate_file_type(filename):
-        return filename.endswith(('.pdf', '.docx', '.txt'))
-    def format_file_size(size_bytes):
-        return f"{size_bytes/1024:.1f} KB"
+    print(f"⚠️ Using fallback classes due to import error: {e}")
+
+# Import settings with fallback
+try:
+    from config.settings import settings
+    print("✅ Successfully imported settings")
+except ImportError:
+    class MockSettings:
+        gemini_api_key = ""
+        openai_api_key = ""
+    settings = MockSettings()
+    print("⚠️ Using mock settings")
+
+# Import utilities with fallback
+try:
+    from src.utils import validate_file_type, format_file_size
+    print("✅ Successfully imported utilities")
+except ImportError:
+    print("⚠️ Using fallback utilities")
 
 # Get logger
 try:
