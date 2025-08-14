@@ -424,19 +424,30 @@ class LegalResearchUI:
         if st.session_state.current_response:
             response = st.session_state.current_response
             
-            # Validate response structure
+            # Validate response structure with comprehensive checking
             if not isinstance(response, dict):
-                st.error(f"Invalid response format: {type(response)}")
-                return
+                if isinstance(response, str):
+                    # Convert string response to dict format
+                    response = {
+                        'answer': response,
+                        'sources': [],
+                        'citations': [],
+                        'has_conflicts': False,
+                        'response_time_seconds': 0
+                    }
+                else:
+                    st.error(f"Invalid response format: {type(response)}")
+                    return
             
-            # Ensure response has minimal required fields
-            if 'answer' not in response:
-                st.warning("Response is missing answer content")
-                response['answer'] = "Unable to generate answer"
-            
-            # Ensure sources is a list
-            if 'sources' in response and not isinstance(response['sources'], list):
-                response['sources'] = []
+            # Ensure response has minimal required fields with safe defaults
+            response = {
+                'answer': response.get('answer', 'No answer provided'),
+                'sources': response.get('sources', []) if isinstance(response.get('sources'), list) else [],
+                'citations': response.get('citations', []) if isinstance(response.get('citations'), list) else [],
+                'has_conflicts': response.get('has_conflicts', False),
+                'response_time_seconds': response.get('response_time_seconds', 0),
+                **response  # Keep all other fields
+            }
             
             st.markdown('<div class="material-card">', unsafe_allow_html=True)
             st.markdown('<div class="section-header">📋 Analysis Result</div>', unsafe_allow_html=True)
@@ -519,7 +530,19 @@ class LegalResearchUI:
             for i, entry in enumerate(reversed(st.session_state.query_history[-5:]), 1):
                 with st.expander(f"Query {len(st.session_state.query_history) - i + 1}: {entry['query'][:50]}..."):
                     st.markdown(f"**Question:** {entry['query']}")
-                    st.markdown(f"**Answer:** {entry['response'].get('answer', 'No answer')[:200]}...")
+                    
+                    # Handle both string and dict responses
+                    response_data = entry['response']
+                    if isinstance(response_data, dict):
+                        answer = response_data.get('answer', 'No answer')
+                    elif isinstance(response_data, str):
+                        answer = response_data
+                    else:
+                        answer = str(response_data)
+                    
+                    # Truncate long answers
+                    display_answer = answer[:200] + "..." if len(answer) > 200 else answer
+                    st.markdown(f"**Answer:** {display_answer}")
                     st.caption(f"Time: {entry['timestamp']}")
             
             st.markdown('</div>', unsafe_allow_html=True)
@@ -888,12 +911,38 @@ class LegalResearchUI:
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            self.render_query_interface()
-            self.render_response_display()
-            self.render_query_history()
+            try:
+                self.render_query_interface()
+            except Exception as e:
+                st.error(f"Query interface error: {str(e)}")
+                if logger:
+                    logger.error(f"Query interface error: {e}")
+            
+            try:
+                self.render_response_display()
+            except Exception as e:
+                st.error(f"Response display error: {str(e)}")
+                if logger:
+                    logger.error(f"Response display error: {e}")
+            
+            try:
+                self.render_query_history()
+            except Exception as e:
+                st.error(f"Query history error: {str(e)}")
+                if logger:
+                    logger.error(f"Query history error: {e}")
         
         with col2:
-            self.render_sidebar()
+            try:
+                self.render_sidebar()
+            except Exception as e:
+                st.error(f"Sidebar error: {str(e)}")
+                if logger:
+                    logger.error(f"Sidebar error: {e}")
+                # Fallback minimal sidebar
+                with st.sidebar:
+                    st.markdown("### 📁 Document Library")
+                    st.info("Sidebar temporarily unavailable")
 
 
 def main():
