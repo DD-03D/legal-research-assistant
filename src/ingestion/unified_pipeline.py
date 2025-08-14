@@ -27,16 +27,33 @@ try:
     if CHROMA_AVAILABLE:
         VECTOR_STORE_TYPE = "ChromaDB"
         vector_store_class = VectorStoreManager
+        logger.info("ChromaDB vector store available")
     else:
         raise ImportError("ChromaDB not available")
-except ImportError:
+except ImportError as e:
+    logger.warning(f"ChromaDB not available ({e}), trying fallback vector store")
     try:
-        from src.ingestion.alternative_vector_store import AlternativeVectorStore
-        VECTOR_STORE_TYPE = "Alternative"
-        vector_store_class = AlternativeVectorStore
-        logger.info("Using alternative vector store implementation")
+        from src.ingestion.fallback_vector_store import FallbackVectorStore
+        VECTOR_STORE_TYPE = "Fallback"
+        vector_store_class = FallbackVectorStore
+        logger.info("Using fallback vector store implementation")
     except ImportError as e:
         logger.error(f"No vector store implementation available: {e}")
+        raise
+except RuntimeError as e:
+    # Handle SQLite compatibility errors
+    if "sqlite3" in str(e).lower() or "3.35.0" in str(e):
+        logger.warning(f"ChromaDB SQLite compatibility issue ({e}), using fallback vector store")
+        try:
+            from src.ingestion.fallback_vector_store import FallbackVectorStore
+            VECTOR_STORE_TYPE = "Fallback"
+            vector_store_class = FallbackVectorStore
+            logger.info("Using fallback vector store due to SQLite compatibility issues")
+        except ImportError as fallback_e:
+            logger.error(f"Fallback vector store not available: {fallback_e}")
+            raise
+    else:
+        logger.error(f"ChromaDB error: {e}")
         raise
 
 
@@ -65,9 +82,9 @@ class UnifiedDocumentIngestionPipeline:
             if VECTOR_STORE_TYPE == "ChromaDB":
                 self.vector_store = vector_store_class(self.persist_directory)
                 logger.info("Initialized ChromaDB vector store")
-            elif VECTOR_STORE_TYPE == "Alternative":
+            elif VECTOR_STORE_TYPE == "Fallback":
                 self.vector_store = vector_store_class(self.persist_directory)
-                logger.info("Initialized alternative vector store")
+                logger.info("Initialized fallback vector store")
             else:
                 raise RuntimeError("No vector store implementation available")
         except Exception as e:
@@ -93,218 +110,101 @@ class UnifiedDocumentIngestionPipeline:
                     logger.info("Using VectorStoreManager.add_document method with processed document data")
                     doc_ids = self.vector_store.add_document(processed_doc)
                 
-                # Check if it's the alternative vector store that expects Document objects
+                # Check if it's the fallback vector store that expects Document objects
                 elif hasattr(self.vector_store, 'add_documents'):
                     logger.info("Using add_documents method with Document objects")
-                    # Create Document objects for alternative vector store
+                    # Create Document objects for fallback vector store
                     documents = []
                     for section in processed_doc.get('sections', []):
                         doc = Document(
-                            page_content=section['content'],
+                            page_content=section.get('content', ''),
                             metadata={
-                                'source': file_path,
-                                'section_number': section['section_number'],
-                                'document_type': processed_doc.get('document_type', 'unknown'),
-                                'filename': Path(file_path).name
+                                'filename': processed_doc.get('filename', ''),
+                                'section_id': section.get('id', ''),
+                                'section_type': section.get('type', ''),
+                                'tokens': section.get('tokens', 0)
                             }
                         )
                         documents.append(doc)
                     
-                    # Split documents if needed
-                    split_docs = self.text_splitter.split_documents(documents)
-                    doc_ids = self.vector_store.add_documents(split_docs)
-                
+                    doc_ids = self.vector_store.add_documents(documents)
                 else:
-                    available_methods = [method for method in dir(self.vector_store) if not method.startswith('_')]
-                    raise AttributeError(f"Vector store has no supported ingestion method. Available methods: {available_methods}")
-                    
-            except Exception as ve:
-                logger.error(f"Vector store operation failed: {ve}")
+                    raise RuntimeError(f"Unknown vector store type: {type(self.vector_store)}")
+                
+                # Update the processed document with vector store IDs
+                processed_doc['vector_store_ids'] = doc_ids
+                processed_doc['vector_store_type'] = VECTOR_STORE_TYPE
+                
+                logger.info(f"Successfully ingested document: {processed_doc}")
+                return processed_doc
+                
+            except Exception as e:
+                logger.error(f"Failed to add document to vector store: {e}")
                 raise
-            
-            return {
-                'success': True,
-                'filename': Path(file_path).name,
-                'document_id': processed_doc.get('document_id'),
-                'sections_added': len(doc_ids) if doc_ids else 0,
-                'total_tokens': processed_doc.get('token_count', 0),
-                'sections_count': len(processed_doc.get('sections', [])),
-                'chunks_count': len(doc_ids) if doc_ids else 0,
-                'vector_store_type': VECTOR_STORE_TYPE
-            }
-            
+                
         except Exception as e:
             logger.error(f"Failed to ingest file {file_path}: {e}")
-            return {
-                'success': False,
-                'error': str(e),
-                'document_id': None
-            }
-    
-    def _read_file_content(self, file_path: str) -> str:
-        """Read content from file based on file type."""
-        file_path = Path(file_path)
-        
-        if file_path.suffix.lower() == '.pdf':
-            try:
-                import PyMuPDF as fitz
-                doc = fitz.open(str(file_path))
-                content = ""
-                for page in doc:
-                    content += page.get_text()
-                doc.close()
-                return content
-            except ImportError:
-                try:
-                    from pypdf import PdfReader
-                    reader = PdfReader(str(file_path))
-                    content = ""
-                    for page in reader.pages:
-                        content += page.extract_text()
-                    return content
-                except ImportError:
-                    raise ImportError("No PDF reader available. Install PyMuPDF or pypdf.")
-        
-        elif file_path.suffix.lower() in ['.docx', '.doc']:
-            try:
-                from docx import Document as DocxDocument
-                doc = DocxDocument(str(file_path))
-                content = ""
-                for paragraph in doc.paragraphs:
-                    content += paragraph.text + "\n"
-                return content
-            except ImportError:
-                raise ImportError("python-docx not available for Word documents.")
-        
-        elif file_path.suffix.lower() == '.txt':
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-                return f.read()
-        
-        else:
-            raise ValueError(f"Unsupported file type: {file_path.suffix}")
-    
-    def ingest_file_with_content(self, file_path: str, content: str) -> Dict[str, Any]:
-        """
-        Ingest a file with pre-read content.
-        Note: This still uses file-based processing for robustness.
-        """
-        return self.process_and_ingest_document(file_path, content)
-    
-    def ingest_documents(self, documents: List[Document]) -> List[str]:
-        """
-        Ingest pre-processed documents directly.
-        """
-        try:
-            # Add to vector store
-            if hasattr(self.vector_store, 'add_documents'):
-                doc_ids = self.vector_store.add_documents(documents)
-            elif hasattr(self.vector_store, 'ingest_documents'):
-                doc_ids = self.vector_store.ingest_documents(documents)
-            else:
-                raise AttributeError("Vector store has no document ingestion method")
-            
-            return doc_ids
-            
-        except Exception as e:
-            logger.error(f"Failed to ingest documents: {e}")
             raise
-
-    def process_and_ingest_document(self, file_path: str, content: Optional[str] = None) -> Dict[str, Any]:
-        """Process and ingest a single document."""
-        try:
-            # If content is provided, we need to create a temp file or use a different approach
-            # For now, let's use the standard process_document function that reads the file
-            if content is not None:
-                # If content is provided, we'll use the process_document function anyway
-                # since it's more robust for legal document processing
-                logger.info(f"Content provided but using file-based processing for: {file_path}")
-            
-            # Process document using the existing robust processor
-            processed_doc = process_document(file_path)
-            
-            # Create Document objects for vector store
-            documents = []
-            for section in processed_doc.get('sections', []):
-                doc = Document(
-                    page_content=section['content'],
-                    metadata={
-                        'source': file_path,
-                        'section_number': section['section_number'],
-                        'document_type': processed_doc.get('document_type', 'unknown'),
-                        'filename': Path(file_path).name
-                    }
-                )
-                documents.append(doc)
-            
-            # Split documents if needed
-            split_docs = self.text_splitter.split_documents(documents)
-            
-            # Add to vector store
-            if hasattr(self.vector_store, 'add_documents'):
-                doc_ids = self.vector_store.add_documents(split_docs)
-            elif hasattr(self.vector_store, 'ingest_documents'):
-                doc_ids = self.vector_store.ingest_documents(split_docs)
-            else:
-                raise AttributeError("Vector store has no document ingestion method")
-            
-            return {
-                'success': True,
-                'document_id': processed_doc.get('document_id'),
-                'sections_count': len(processed_doc.get('sections', [])),
-                'chunks_count': len(split_docs),
-                'vector_store_type': VECTOR_STORE_TYPE
-            }
-            
-        except Exception as e:
-            logger.error(f"Failed to process and ingest document {file_path}: {e}")
-            return {
-                'success': False,
-                'error': str(e),
-                'document_id': None
-            }
     
-    def search_documents(self, query: str, k: int = 4) -> List[Document]:
-        """Search for relevant documents."""
+    def ingest_documents_batch(self, file_paths: List[str]) -> List[Dict[str, Any]]:
+        """
+        Ingest multiple documents in batch.
+        
+        Args:
+            file_paths: List of file paths to process
+            
+        Returns:
+            List of processed document results
+        """
+        results = []
+        
+        for file_path in file_paths:
+            try:
+                result = self.ingest_file(file_path)
+                results.append(result)
+            except Exception as e:
+                logger.error(f"Failed to ingest {file_path}: {e}")
+                # Continue with other files
+                continue
+        
+        return results
+    
+    def search_documents(self, query: str, n_results: int = 5) -> List[Dict[str, Any]]:
+        """
+        Search for documents using the available vector store.
+        
+        Args:
+            query: Search query string
+            n_results: Number of results to return
+            
+        Returns:
+            List of search results
+        """
         try:
-            if hasattr(self.vector_store, 'similarity_search'):
-                return self.vector_store.similarity_search(query, k=k)
+            if hasattr(self.vector_store, 'search_similar_documents'):
+                return self.vector_store.search_similar_documents(query, n_results)
             elif hasattr(self.vector_store, 'search'):
-                return self.vector_store.search(query, k=k)
+                return self.vector_store.search(query, n_results)
             else:
-                logger.warning("Vector store has no search method")
-                return []
+                raise RuntimeError("Vector store does not support search operations")
         except Exception as e:
             logger.error(f"Search failed: {e}")
             return []
     
-    def get_collection_info(self) -> Dict[str, Any]:
-        """Get information about the vector store collection."""
+    def get_vector_store_info(self) -> Dict[str, Any]:
+        """Get information about the current vector store."""
         try:
-            if hasattr(self.vector_store, 'get_collection_info'):
-                info = self.vector_store.get_collection_info()
-                info['vector_store_type'] = VECTOR_STORE_TYPE
-                return info
-            elif hasattr(self.vector_store, 'get_document_count'):
-                # Try to get document count
-                doc_count = self.vector_store.get_document_count()
-                return {
-                    'vector_store_type': VECTOR_STORE_TYPE,
-                    'status': 'available',
-                    'document_count': doc_count
-                }
+            if hasattr(self.vector_store, 'get_collection_stats'):
+                return self.vector_store.get_collection_stats()
             else:
                 return {
-                    'vector_store_type': VECTOR_STORE_TYPE,
-                    'status': 'available',
-                    'document_count': 'unknown'
+                    'store_type': VECTOR_STORE_TYPE,
+                    'persist_directory': self.persist_directory,
+                    'methods': [method for method in dir(self.vector_store) if not method.startswith('_')]
                 }
         except Exception as e:
-            logger.error(f"Failed to get collection info: {e}")
-            return {
-                'vector_store_type': VECTOR_STORE_TYPE,
-                'status': 'error',
-                'error': str(e)
-            }
+            logger.error(f"Failed to get vector store info: {e}")
+            return {'error': str(e)}
 
 
 # Maintain backward compatibility

@@ -5,6 +5,7 @@ ChromaDB compatibility fixes for deployment environments.
 import os
 import warnings
 import tempfile
+import sqlite3
 from loguru import logger
 
 # Force-disable telemetry as early as possible
@@ -14,6 +15,40 @@ os.environ["CHROMA_TELEMETRY_ENABLED"] = "0"
 os.environ["CHROMA_SERVER_NOFILE"] = os.environ.get("CHROMA_SERVER_NOFILE", "1024")
 os.environ["CHROMA_TELEMETRY_HOST"] = ""
 os.environ["CHROMA_TELEMETRY_PORT"] = ""
+
+def check_sqlite_version():
+    """Check SQLite version and provide compatibility info."""
+    try:
+        version = sqlite3.sqlite_version
+        version_tuple = tuple(map(int, version.split('.')))
+        logger.info(f"System SQLite version: {version}")
+        
+        if version_tuple < (3, 35, 0):
+            logger.warning(f"⚠️  System SQLite version {version} may be incompatible")
+            logger.warning("   Consider installing pysqlite3-binary for better compatibility")
+            return False
+        else:
+            logger.info(f"✅ System SQLite version {version} is compatible")
+            return True
+    except Exception as e:
+        logger.warning(f"Could not determine SQLite version: {e}")
+        return False
+
+def fix_sqlite_compatibility():
+    """Fix SQLite compatibility issues for ChromaDB."""
+    try:
+        # Try to import pysqlite3 and replace the system sqlite3
+        import pysqlite3
+        import sys
+        
+        # Replace the system sqlite3 with pysqlite3
+        sys.modules["sqlite3"] = pysqlite3
+        logger.info("✅ Successfully replaced system sqlite3 with pysqlite3")
+        return True
+        
+    except ImportError:
+        logger.warning("⚠️  pysqlite3 not available, using system sqlite3")
+        return False
 
 def fix_chroma_telemetry():
     """Fix ChromaDB telemetry issues in deployment environments."""
@@ -32,6 +67,11 @@ def fix_chroma_telemetry():
         warnings.filterwarnings("ignore", message=".*ClientStartEvent.*")
         warnings.filterwarnings("ignore", message=".*ClientCreateCollectionEvent.*")
         warnings.filterwarnings("ignore", message=".*CollectionQueryEvent.*")
+
+        # Check SQLite compatibility first
+        sqlite_ok = check_sqlite_version()
+        if not sqlite_ok:
+            fix_sqlite_compatibility()
 
         # Monkey patch the telemetry capture method if it exists
         try:
@@ -56,6 +96,9 @@ def fix_chroma_import():
         # Set environment variables before importing ChromaDB
         os.environ["ANONYMIZED_TELEMETRY"] = "False"
         os.environ["CHROMA_TELEMETRY_ENABLED"] = "0"
+        
+        # Fix SQLite compatibility first
+        fix_sqlite_compatibility()
         
         # Try to import and configure ChromaDB
         import chromadb
@@ -111,8 +154,11 @@ def reset_chroma_client():
     try:
         import chromadb
         # Try to reset any existing client
-        chromadb.reset()
-        logger.info("✅ ChromaDB client reset successfully")
+        if hasattr(chromadb, 'reset'):
+            chromadb.reset()
+            logger.info("✅ ChromaDB client reset successfully")
+        else:
+            logger.warning("ChromaDB reset method not available")
         return True
     except Exception as e:
         logger.warning(f"Could not reset ChromaDB client: {e}")
@@ -121,6 +167,9 @@ def reset_chroma_client():
 def disable_chroma_telemetry_completely():
     """Completely disable ChromaDB telemetry by patching the capture method."""
     try:
+        # Fix SQLite compatibility first
+        fix_sqlite_compatibility()
+        
         import chromadb
         if hasattr(chromadb, 'telemetry') and chromadb.telemetry:
             # Create a dummy capture method that does nothing

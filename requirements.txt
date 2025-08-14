@@ -46,4 +46,5 @@ loguru>=0.7.0
 # UI/UX
 plotly>=5.15.0
 
-# Note: Python 3.13 has built-in SQLite support, no need for pysqlite3-binary
+# SQLite Compatibility for Streamlit Cloud (required for ChromaDB)
+pysqlite3-binary>=0.5.0
